@@ -4,6 +4,9 @@ extern crate clap;
 mod lang;
 
 use clap::{App, Arg};
+use std::process;
+use std::fs::File;
+use std::io::{Read,BufRead,stdin,stdout};
 
 fn main() {
     let matches = App::new("romulus")
@@ -21,5 +24,52 @@ fn main() {
              .help("file with romulus program"))
         .get_matches();
 
-    println!("Hello, world!");
+    let interpreter = match (matches.value_of("expr"), matches.value_of("file")) {
+        (Some(expr), None) => interpreter_expr(expr),
+        (None, Some(filename)) => interpreter_file(filename),
+        (None, None) => {
+            eprintln!("Must specify an expression or a file");
+            process::exit(1);
+        }
+        (Some(_), Some(_)) => {
+            eprintln!("Must specify an expression or a file not both");
+            process::exit(1);
+        }
+    };
+
+    interpreter.process(stdin().lock(), stdout());
+}
+
+fn interpreter_expr(expr: &str) -> lang::Interpreter {
+    match lang::Interpreter::new(expr) {
+        Ok(int) => int,
+        Err(msg) => {
+            eprintln!("{}", msg);
+            process::exit(1);
+        }
+    }
+}
+
+fn interpreter_file(path: &str) -> lang::Interpreter {
+    let mut file = match File::open(path)  {
+        Ok(f) => f,
+        Err(err) => {
+            eprintln!("{}", err);
+            process::exit(1);
+        }
+    };
+
+    let mut buf = String::new();
+    if let Err(err) = file.read_to_string(&mut buf) {
+        eprintln!("{}", err);
+        process::exit(1);
+    }
+
+    match lang::Interpreter::new(&buf) {
+        Ok(f) => f,
+        Err(msg) => {
+            eprintln!("{}", msg);
+            process::exit(1);
+        }
+    }
 }
