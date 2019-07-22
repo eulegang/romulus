@@ -279,3 +279,48 @@ fn to_regex(pat: String, flags: String) -> Result<Box<Regex>, String> {
         Err(_) => Err(format!("Can not create from /{}/{}", pat, flags)),
     }
 }
+
+#[cfg(test)]
+mod parse_tests {
+    use super::super::lex::lex;
+    use super::*;
+
+    #[test]
+    fn basic_parse() {
+        let tokens = match lex("/needle/ { print('found it') }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(parse(tokens), Ok(Node{ subnodes: vec![
+            BodyNode::Guard(
+                SelectorNode::Match(MatchNode::Regex(Box::new(Regex::new("needle").unwrap()))),
+                Node {
+                    subnodes: vec![
+                        BodyNode::Bare(FunctionNode{
+                            name: String::from("print"),
+                            args: vec![ExpressionNode::Literal(LiteralNode::String("found it".to_string(), false))],
+                        })
+                    ]
+                }
+            )
+        ]}));
+    }
+
+    #[test]
+    fn basic_func() {
+        let tokens = match lex("print('found it')") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(parse(tokens), Ok(Node{ subnodes: vec![
+            BodyNode::Bare(FunctionNode{
+                name: String::from("print"),
+                args: vec![ExpressionNode::Literal(LiteralNode::String("found it".to_string(), false))],
+            })
+        ]}));
+
+    }
+}
+
