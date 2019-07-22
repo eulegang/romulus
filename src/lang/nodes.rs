@@ -223,7 +223,7 @@ impl Parsable for FunctionNode {
         let mut args = Vec::new();
         let mut cur = pos + 2;
         loop {
-            let (expr, after_expr) = ExpressionNode::parse(&tokens, cur+1)?;
+            let (expr, after_expr) = ExpressionNode::parse(&tokens, cur)?;
             cur = after_expr;
             args.push(expr);
 
