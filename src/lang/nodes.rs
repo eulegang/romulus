@@ -135,8 +135,23 @@ impl Parsable for Node {
 impl Parsable for BodyNode {
     fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(BodyNode, usize), String> {
         if let Some((sel, cur)) = SelectorNode::try_parse(&tokens, pos) {
-            let (node, next) = Node::parse(&tokens, cur)?;
-            Ok((BodyNode::Guard(sel, node), next))
+            if Some(&Token::Paren('{')) != tokens.get(cur) {
+                return Err(format!("expected {{ but received: {:?}", tokens.get(cur)));
+            }
+
+            let mut current = cur + 1;
+            let mut subnodes = Vec::new();
+            while Some(&Token::Paren('}')) != tokens.get(current) {
+                let (node, next) = BodyNode::parse(&tokens, current)?;
+                subnodes.push(node);
+                current = next;
+            }
+
+            if Some(&Token::Paren('}')) != tokens.get(current) {
+                return Err(format!("expected }} but received: {:?}", tokens.get(current)));
+            }
+
+            Ok((BodyNode::Guard(sel, Node{subnodes: subnodes}), current+1))
         } else {
             let (node, next) = FunctionNode::parse(&tokens, pos)?;
             Ok((BodyNode::Bare(node), next))
