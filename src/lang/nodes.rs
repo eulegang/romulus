@@ -165,7 +165,7 @@ impl Parsable for MatchNode {
                 Ok((MatchNode::Regex(regex), pos + 1))
             }
 
-            _ => Err(format!("Expected a regex or a number but received something else"))
+            _ => Err(format!("expected a regex or a number but received {:?}", token))
         }
     }
 }
@@ -175,7 +175,7 @@ impl Parsable for RangeNode {
         let (start_match, after_start) = MatchNode::parse(&tokens, pos)?;
 
         if Some(&Token::Comma) != tokens.get(after_start) {
-            return Err(String::from("expected a comma"));
+            return Err(format!("expected a comma but received: {:?}", tokens.get(after_start)));
         }
 
         let (end_match, after_end) = MatchNode::parse(&tokens, after_start+1)?;
@@ -198,7 +198,7 @@ impl Parsable for LiteralNode {
                 Ok((LiteralNode::String(content.to_string(), *interpolatable), pos+1))
             }
 
-            _ => Err(format!("Expected a literal token")),
+            _ => Err(format!("expected a literal token but received {:?}", token)),
         }
     }
 }
@@ -209,11 +209,11 @@ impl Parsable for FunctionNode {
 
         let identifier = match token {
             Token::Identifier(name) => name,
-            _ => return Err(String::from("Expected identifier")),
+            _ => return Err(format!("expected identifier for function name but received: {:?}", token)),
         };
 
         if Some(&Token::Paren('(')) != tokens.get(pos+1) {
-            return Err("expected (".to_string());
+            return Err(format!("expected ( but received {:?}", tokens.get(pos+1)));
         }
 
         if Some(&Token::Paren(')')) == tokens.get(pos+2) {
@@ -232,7 +232,7 @@ impl Parsable for FunctionNode {
             }
 
             if Some(&Token::Comma) != tokens.get(cur) {
-                return Err("Expected comma and then next arg".to_string());
+                return Err(format!("expected comma but received {:?}", tokens.get(cur)));
             }
 
             cur += 1;
