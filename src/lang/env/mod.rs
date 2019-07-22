@@ -18,7 +18,7 @@ pub struct Scope {
 impl <'a> Environment<'a> {
     pub fn new<W: Write>(w: &'a mut W) -> Environment<'a> {
         Environment{
-            lineno: 1,
+            lineno: 0,
             line: String::new(),
             func_reg: FunctionRegistry::default(),
             scope_stack: Vec::new(),
