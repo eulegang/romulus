@@ -28,8 +28,8 @@ pub struct FunctionRegistry {
 }
 
 impl FunctionRegistry {
-    pub(crate) fn call(&self, name: String, values: Vec<Value>) -> Result<(), FnCallError> {
-        unimplemented!();
+    pub fn get(&self, key: &str) -> Option<&Box<Func>> {
+        self.funcs.get(key)
     }
 }
 
@@ -45,8 +45,8 @@ impl Default for FunctionRegistry {
     }
 }
 
-struct Func {
-    proc: fn(&mut Environment, args: &[Value]),
+pub struct Func {
+    pub(crate) proc: fn(&mut Environment, args: &[Value]),
 }
 
 fn print_impl(env: &mut Environment, args: &[Value]) {

@@ -6,7 +6,7 @@ use super::func::{FunctionRegistry, Value};
 pub struct Environment<'a> {
     pub lineno: i64,
     pub line: String,
-    func_reg: FunctionRegistry,
+    pub func_reg: FunctionRegistry,
     scope_stack: Vec<Scope>,
     out: &'a mut Write,
 }
@@ -46,11 +46,13 @@ impl <'a> Environment<'a> {
         self.scope_stack.pop();
     }
 
-    pub(crate) fn call(&self, name: String, args: Vec<Value>) {
-        match self.func_reg.call(name, args) {
-            Ok(_) => (),
-            Err(x) => panic!(x),
-        }
+    pub(crate) fn call(&mut self, name: String, args: Vec<Value>) {
+        let func = match self.func_reg.get(&name) {
+            Some(f) => f,
+            None => panic!(format!("expected {} to be defined", name)),
+        };
+
+        (func.proc)(self, &args);
     }
 }
 
