@@ -27,6 +27,19 @@ impl Token {
             Token::Comma => "comma".to_string(),
         }
     }
+
+    fn significant(&self) -> bool {
+        match self {
+            Token::Number(_) => true,
+            Token::Paren(_) => true,
+            Token::Regex(_, _) => true,
+            Token::Comment(_) => false,
+            Token::Identifier(_) => true,
+            Token::String(_, _) => true,
+            Token::Newline => false,
+            Token::Comma => true,
+        }
+    }
 }
 
 #[inline]
@@ -138,7 +151,13 @@ fn get_number(vec: Vec<char>) -> i64 {
     buffer
 }
 
-pub (crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
+pub(crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
+    let tokens = full_lex(buf)?;
+
+    return Ok(tokens.into_iter().filter(|t| t.significant()).collect::<Vec<Token>>())
+}
+
+pub (crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut it = buf.chars().peekable();
 
@@ -228,22 +247,22 @@ mod tests {
 
     #[test]
     fn test_lex_numbers() {
-        assert_eq!(lex("1234"), Ok(vec![Token::Number(1234)]));
+        assert_eq!(full_lex("1234"), Ok(vec![Token::Number(1234)]));
     }
 
     #[test]
     fn test_lex_ignores_white_space() {
-        assert_eq!(lex("\n \t1234 1\n\r"), Ok(vec![Token::Newline, Token::Number(1234), Token::Number(1), Token::Newline]));
+        assert_eq!(full_lex("\n \t1234 1\n\r"), Ok(vec![Token::Newline, Token::Number(1234), Token::Number(1), Token::Newline]));
     }
 
     #[test]
     fn test_lex_context() {
-        assert_eq!(lex("1 { }"), Ok(vec![Token::Number(1), Token::Paren('{'), Token::Paren('}')]));
+        assert_eq!(full_lex("1 { }"), Ok(vec![Token::Number(1), Token::Paren('{'), Token::Paren('}')]));
     }
 
     #[test]
     fn test_lex_regex() {
-        assert_eq!(lex("/.*/iU"), Ok(vec![Token::Regex(".*".to_string(), "iU".to_string())]));
+        assert_eq!(full_lex("/.*/iU"), Ok(vec![Token::Regex(".*".to_string(), "iU".to_string())]));
     }
 
     #[test]
@@ -255,7 +274,7 @@ mod tests {
                    Token::Regex("test *".to_string(), "i".to_string())
         ];
 
-        assert_eq!(lex("42 #some comment\n  /test */i"), Ok(tokens));
+        assert_eq!(full_lex("42 #some comment\n  /test */i"), Ok(tokens));
     }
 
     #[test]
@@ -269,7 +288,17 @@ mod tests {
             Token::Paren(')'),
         ];
 
-        assert_eq!(lex("subst(/(?P<name>[a-z]+):/,\"Name: ${name}\")"), Ok(tokens));
+        assert_eq!(full_lex("subst(/(?P<name>[a-z]+):/,\"Name: ${name}\")"), Ok(tokens));
     }
-}
+
+    #[test]
+    fn test_removed() {
+        let tokens = vec![
+                   Token::Number(42), 
+                   Token::Regex("test *".to_string(), "i".to_string())
+        ];
+
+        assert_eq!(lex("42 #some comment\n  /test */i"), Ok(tokens));
+    }
+}   
 
