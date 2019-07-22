@@ -6,7 +6,7 @@ mod lang;
 use clap::{App, Arg};
 use std::process;
 use std::fs::File;
-use std::io::{Read,BufRead,stdin,stdout};
+use std::io::{Read,stdin,stdout};
 
 fn main() {
     let matches = App::new("romulus")
@@ -37,7 +37,10 @@ fn main() {
         }
     };
 
-    interpreter.process(stdin().lock(), stdout());
+    let sin = stdin();
+    let mut sin_lock = sin.lock();
+    let mut sout = stdout();
+    interpreter.process(&mut sin_lock, &mut sout);
 }
 
 fn interpreter_expr(expr: &str) -> lang::Interpreter {

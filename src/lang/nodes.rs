@@ -47,22 +47,21 @@ pub(crate) enum SelectorNode {
 }
 
 pub(crate) enum ExpressionNode {
-    Func(FunctionNode),
     Literal(LiteralNode),
 }
 
 pub(crate) struct FunctionNode {
-    name: String,
-    args: Vec<ExpressionNode>
+    pub(crate) name: String,
+    pub(crate) args: Vec<ExpressionNode>
 }
 
 pub (crate) enum BodyNode {
-    Bare(ExpressionNode),
+    Bare(FunctionNode),
     Guard(SelectorNode, Node),
 }
 
 pub (crate) struct Node {
-    subnodes: Vec<BodyNode>
+    pub(crate) subnodes: Vec<BodyNode>
 }
 
 pub (crate) fn parse(tokens: Vec<Token>) -> Result<Node, String> {
@@ -103,7 +102,7 @@ impl Parsable for BodyNode {
             let (node, next) = Node::parse(&tokens, cur)?;
             Ok((BodyNode::Guard(sel, node), next))
         } else {
-            let (node, next) = ExpressionNode::parse(&tokens, pos)?;
+            let (node, next) = FunctionNode::parse(&tokens, pos)?;
             Ok((BodyNode::Bare(node), next))
         }
     }
@@ -212,8 +211,8 @@ impl Parsable for FunctionNode {
 
 impl Parsable for ExpressionNode {
     fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(ExpressionNode, usize), String> {
-        try_rewrap!(LiteralNode, ExpressionNode::Literal, tokens, pos);
-        must_rewrap!(FunctionNode, ExpressionNode::Func, tokens, pos)
+        must_rewrap!(LiteralNode, ExpressionNode::Literal, tokens, pos)
+        //must_rewrap!(FunctionNode, ExpressionNode::Func, tokens, pos)
     }
 }
 
