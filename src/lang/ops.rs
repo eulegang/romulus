@@ -1,7 +1,7 @@
 use super::nodes::*;
 use super::env::Environment;
 
-trait Operation {
+pub trait Operation {
     fn perform(&self, env: &mut Environment);
 }
 
