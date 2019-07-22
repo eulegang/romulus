@@ -29,39 +29,75 @@ macro_rules! must_rewrap {
     } 
 }
 
+#[derive(Debug)]
 pub(crate) enum LiteralNode {
     Regex(Box<Regex>),
     String(String, bool),
 }
 
+#[derive(Debug)]
 pub(crate) enum MatchNode {
     Index(i64),
     Regex(Box<Regex>),
 }
 
+#[derive(Debug, PartialEq)]
 pub(crate) struct RangeNode (MatchNode, MatchNode);
 
+#[derive(Debug, PartialEq)]
 pub(crate) enum SelectorNode {
     Match(MatchNode),
     Range(RangeNode),
 }
 
+#[derive(Debug, PartialEq)]
 pub(crate) enum ExpressionNode {
     Literal(LiteralNode),
 }
 
+#[derive(Debug, PartialEq)]
 pub(crate) struct FunctionNode {
     pub(crate) name: String,
     pub(crate) args: Vec<ExpressionNode>
 }
 
+#[derive(Debug, PartialEq)]
 pub (crate) enum BodyNode {
     Bare(FunctionNode),
     Guard(SelectorNode, Node),
 }
 
+#[derive(Debug, PartialEq)]
 pub (crate) struct Node {
     pub(crate) subnodes: Vec<BodyNode>
+}
+
+impl PartialEq for MatchNode {
+    fn eq(&self, other: &MatchNode) -> bool {
+        if let (MatchNode::Index(ai), MatchNode::Index(bi)) = (self, other) {
+            return ai == bi
+        }
+
+        if let (MatchNode::Regex(_), MatchNode::Regex(_)) = (self, other) {
+            return true
+        }
+
+        return false
+    }
+}
+
+impl PartialEq for LiteralNode {
+    fn eq(&self, other: &LiteralNode) -> bool {
+        if let (LiteralNode::Regex(_), LiteralNode::Regex(_)) = (self, other) {
+            return true
+        }
+
+        if let (LiteralNode::String(ss, si), LiteralNode::String(os, oi)) = (self, other) {
+            return ss == os && si == oi
+        }
+
+        return false
+    }
 }
 
 pub (crate) fn parse(tokens: Vec<Token>) -> Result<Node, String> {
