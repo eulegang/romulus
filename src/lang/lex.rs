@@ -219,6 +219,7 @@ pub (crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
             '\'' => {
                 it.next();
                 let chars = chomp_until(&mut it, '\'');
+                it.next();
                 let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::String(content, false));
