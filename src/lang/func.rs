@@ -5,10 +5,6 @@ use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::io::Write;
 
-pub(crate) enum FnCallError {
-    UnknownFunction(String)
-}
-
 pub(crate) enum Value {
     String(String),
     Regex(Box<Regex>),
