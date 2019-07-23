@@ -46,8 +46,12 @@ pub struct Func {
 }
 
 fn print_impl(env: &mut Environment, args: &[Value]) {
-    for arg in args {
-        let _ = write!(env, "{}", arg);
+    if args.is_empty() {
+        let _ = write!(env.out, "{}", &env.line);
+    } else {
+        for arg in args {
+            let _ = write!(env, "{}", arg);
+        }
     }
 
     let _ = write!(env, "\n");
