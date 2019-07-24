@@ -1,5 +1,0 @@
-#! /usr/bin/env romulus -f
-
-/needle/ {
-	print("found it")
-}
