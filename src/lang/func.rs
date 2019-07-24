@@ -5,7 +5,7 @@ use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::io::Write;
 
-pub(crate) enum Value {
+pub enum Value {
     String(String),
     Regex(Box<Regex>),
 }
