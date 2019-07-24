@@ -31,28 +31,7 @@ impl Operation for BodyNode {
 impl Operation for FunctionNode {
     fn perform(&self, env: &mut Environment) {
         let values: Vec<Value> = self.args.iter().map(|expr| -> Value {
-            match expr {
-                ExpressionNode::Literal(lit) => {
-                    match lit {
-                        LiteralNode::Regex(regex) => Value::Regex(regex.clone()),
-                        LiteralNode::String(s, interpolate) => {
-                            if *interpolate {
-                                Value::String(s.clone()) // TODO: Don't interpolate for the time being
-                            } else {
-                                Value::String(s.clone())
-                            }
-                        }
-                    }
-                }
-
-                ExpressionNode::Identifier(name) => {
-                    if let Some(value) = env.lookup(name) {
-                        Value::String(value.clone())
-                    } else {
-                        Value::String(String::new())
-                    }
-                }
-            }
+            expr.to_value(&env)
         }).collect();
 
         env.call(self.name.clone(), values);
