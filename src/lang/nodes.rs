@@ -42,7 +42,7 @@ pub(crate) enum MatchNode {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct RangeNode (MatchNode, MatchNode);
+pub(crate) struct RangeNode (pub MatchNode, pub MatchNode);
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum SelectorNode {
@@ -161,10 +161,15 @@ impl Parsable for BodyNode {
 
 impl Parsable for SelectorNode {
     fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(SelectorNode, usize), String> {
-        try_rewrap!(MatchNode, SelectorNode::Match, tokens, pos);
+        let (s, next) = MatchNode::parse(tokens, pos)?;
 
-        let (range_node, cur) = RangeNode::parse(&tokens, pos)?;
-        Ok((SelectorNode::Range(range_node), cur))
+        if Some(&Token::Comma) != tokens.get(next) {
+            return Ok((SelectorNode::Match(s), next));
+        }
+
+        let (e, after_end) = MatchNode::parse(tokens, next+1)?;
+
+        Ok((SelectorNode::Range(RangeNode(s, e)), after_end))
     }
 }
 
@@ -321,6 +326,30 @@ mod parse_tests {
             })
         ]}));
 
+    }
+
+    #[test]
+    fn parse_range() {
+        let tokens = match lex("/a/,/b/ { print() }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg)
+        };
+
+        assert_eq!(parse(tokens), Ok(Node{ subnodes: vec![
+            BodyNode::Guard(
+                SelectorNode::Range(RangeNode(
+                        MatchNode::Regex(Box::new(Regex::new("a").unwrap())), 
+                        MatchNode::Regex(Box::new(Regex::new("b").unwrap())))),
+                Node {
+                    subnodes: vec![
+                        BodyNode::Bare(FunctionNode{
+                            name: String::from("print"),
+                            args: vec![],
+                        })
+                    ]
+                }
+            )
+        ]}));
     }
 }
 

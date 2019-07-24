@@ -4,10 +4,12 @@ mod func;
 mod env;
 
 mod ops;
+mod meta;
 
 use std::io::{BufRead,Write};
 use env::Environment;
 use ops::Operation;
+use crate::lang::meta::{RangeCap};
 
 pub struct Interpreter {
     node: nodes::Node
@@ -25,7 +27,7 @@ impl Interpreter {
 
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
         let mut iter = sin.lines();
-        let mut env = Environment::new(sout);
+        let mut env = Environment::new(sout, self.node.num_ranges());
 
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;

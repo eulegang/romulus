@@ -9,6 +9,9 @@ pub struct Environment<'a> {
     pub func_reg: FunctionRegistry,
     scope_stack: Vec<Scope>,
     pub out: &'a mut Write,
+
+    range_states: Vec<bool>,
+    range_pos: usize,
 }
 
 pub struct Scope {
@@ -16,14 +19,35 @@ pub struct Scope {
 }
 
 impl <'a> Environment<'a> {
-    pub fn new<W: Write>(w: &'a mut W) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, num_ranges: usize) -> Environment<'a> {
         Environment{
             lineno: 0,
             line: String::new(),
             func_reg: FunctionRegistry::default(),
             scope_stack: Vec::new(),
             out: w,
+
+            range_states: vec![false; num_ranges],
+            range_pos: 0,
         }
+    }
+}
+
+impl <'a> Environment<'a> {
+    pub fn range(&self) -> bool {
+        self.range_states[self.range_pos]
+    }
+
+    pub fn next_range(&mut self) {
+        self.range_pos = (self.range_pos + 1) % self.range_states.len();
+    }
+
+    pub fn toggle_range(&mut self) {
+        self.range_states[self.range_pos] = !self.range_states[self.range_pos];
+    }
+
+    pub fn reset_range(&mut self) {
+        self.range_pos = 0;
     }
 }
 
