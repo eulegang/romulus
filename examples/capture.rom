@@ -6,6 +6,6 @@
 
 /pokemon "(?P<name>.*)"/,/}/ {
 	/type *= *"(?P<type>.*)"/ {
-		print(name, ",", type)
+		print("${name},${type}")
 	}
 }
