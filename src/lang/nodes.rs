@@ -4,8 +4,8 @@ use regex::Regex;
 
 macro_rules! guard_eof {
     ($expr:expr) => {
-        if let Some(thing) = $expr {
-            thing
+        if let Some(token) = $expr {
+            token
         } else {
             return Err(String::from("Unexpected EOF"));
         }
@@ -16,15 +16,6 @@ macro_rules! try_rewrap {
     ($target: ty, $rewrite: expr, $tokens: expr, $pos: expr) => {
         if let Some((node, next_pos)) = <$target>::try_parse($tokens, $pos) {
             return Ok(($rewrite(node), next_pos))
-        }
-    } 
-}
-
-macro_rules! must_rewrap {
-    ($target: ty, $rewrite: expr, $tokens: ident, $pos: ident) => {
-        {
-            let (node, next_pos) = <$target>::parse($tokens, $pos)?;
-            Ok(($rewrite(node), next_pos))
         }
     } 
 }
