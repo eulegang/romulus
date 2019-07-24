@@ -91,20 +91,17 @@ impl Selector for RangeNode {
     fn select(&self, env: &mut Environment) -> bool {
         let RangeNode(start, end) = self;
 
-        let next = if !env.range() {
+        if !env.range() {
             if start.select(env) {
-                env.toggle_range();
+                env.set_range_state(start.scope(env));
             }
-            env.range()
         } else {
             if end.select(env) {
-                env.toggle_range();
-                !env.range()
-            } else {
-                env.range()
+                env.clear_range_state();
             }
         };
 
+        let next = env.range();
         env.next_range();
         next
     }
@@ -112,7 +109,11 @@ impl Selector for RangeNode {
 
 impl ScopeProvider for RangeNode {
     fn scope(&self, env: &Environment) -> Scope {
-        unimplemented!();
+        if let Some(scope) = env.range_scope() {
+            scope.clone()
+        } else {
+            Scope::new()
+        }
     }
 }
 

@@ -1,5 +1,11 @@
 #! /usr/bin/env romulus -f
 
-/type *= *"(?P<type>.*)"/ {
-	print(type)
+1 {
+	print("name,type")
+}
+
+/pokemon "(?P<name>.*)"/,/}/ {
+	/type *= *"(?P<type>.*)"/ {
+		print(name, ",", type)
+	}
 }

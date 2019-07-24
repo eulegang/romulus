@@ -10,7 +10,7 @@ pub struct Environment<'a> {
     scope_stack: Vec<Scope>,
     pub out: &'a mut Write,
 
-    range_states: Vec<bool>,
+    range_states: Vec<Option<Scope>>,
     range_pos: usize,
 }
 
@@ -23,7 +23,7 @@ impl <'a> Environment<'a> {
             scope_stack: Vec::new(),
             out: w,
 
-            range_states: vec![false; num_ranges],
+            range_states: vec![None; num_ranges],
             range_pos: 0,
         }
     }
@@ -31,15 +31,26 @@ impl <'a> Environment<'a> {
 
 impl <'a> Environment<'a> {
     pub fn range(&self) -> bool {
-        self.range_states[self.range_pos]
+        match self.range_states[self.range_pos] {
+            None => false,
+            Some(_) => true,
+        }
     }
 
     pub fn next_range(&mut self) {
         self.range_pos = (self.range_pos + 1) % self.range_states.len();
     }
 
-    pub fn toggle_range(&mut self) {
-        self.range_states[self.range_pos] = !self.range_states[self.range_pos];
+    pub fn range_scope(&self) -> &Option<Scope> {
+        &self.range_states[self.range_pos]
+    }
+
+    pub fn set_range_state(&mut self, scope: Scope) {
+        self.range_states[self.range_pos] = Some(scope)
+    }
+
+    pub fn clear_range_state(&mut self) {
+        self.range_states[self.range_pos] = None
     }
 
     pub fn reset_range(&mut self) {
@@ -76,6 +87,7 @@ impl <'a> Environment<'a> {
     }
 }
 
+#[derive(Clone)]
 pub struct Scope {
     local: HashMap<String, String>,
 }
