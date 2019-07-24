@@ -34,6 +34,7 @@ impl Interpreter {
             env.line = line;
 
             self.node.perform(&mut env);
+            env.reset_range();
         }
     }
 }

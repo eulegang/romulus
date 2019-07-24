@@ -53,6 +53,7 @@ pub(crate) enum SelectorNode {
 #[derive(Debug, PartialEq)]
 pub(crate) enum ExpressionNode {
     Literal(LiteralNode),
+    Identifier(String),
 }
 
 #[derive(Debug, PartialEq)]
@@ -267,7 +268,14 @@ impl Parsable for FunctionNode {
 
 impl Parsable for ExpressionNode {
     fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(ExpressionNode, usize), String> {
-        must_rewrap!(LiteralNode, ExpressionNode::Literal, tokens, pos)
+        try_rewrap!(LiteralNode, ExpressionNode::Literal, tokens, pos);
+
+        if let Some(Token::Identifier(name)) = tokens.get(pos) {
+            return Ok((ExpressionNode::Identifier(name.to_string()), pos+1));
+        };
+
+        Err(format!("Expected litteral or identifier but received: {:?}", tokens.get(pos)))
+
         //must_rewrap!(FunctionNode, ExpressionNode::Func, tokens, pos)
     }
 }
@@ -345,6 +353,28 @@ mod parse_tests {
                         BodyNode::Bare(FunctionNode{
                             name: String::from("print"),
                             args: vec![],
+                        })
+                    ]
+                }
+            )
+        ]}));
+    }
+
+    #[test]
+    fn parse_identifiers() {
+        let tokens = match lex("/Type: (?P<type>.*)/ { print(type) }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(parse(tokens), Ok(Node{ subnodes: vec![
+            BodyNode::Guard(
+                SelectorNode::Match(MatchNode::Regex(Box::new(Regex::new("Type: (?P<type>.*)").unwrap()))),
+                Node {
+                    subnodes: vec![
+                        BodyNode::Bare(FunctionNode{
+                            name: String::from("print"),
+                            args: vec![ExpressionNode::Identifier("type".to_string())],
                         })
                     ]
                 }
