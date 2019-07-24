@@ -1,0 +1,5 @@
+#! /usr/bin/env romulus -f
+
+/type *= *"(?P<type>.*)"/ {
+	print(type)
+}

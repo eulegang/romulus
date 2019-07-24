@@ -14,10 +14,6 @@ pub struct Environment<'a> {
     range_pos: usize,
 }
 
-pub struct Scope {
-    local: HashMap<String, String>,
-}
-
 impl <'a> Environment<'a> {
     pub fn new<W: Write>(w: &'a mut W, num_ranges: usize) -> Environment<'a> {
         Environment{
@@ -52,9 +48,9 @@ impl <'a> Environment<'a> {
 }
 
 impl <'a> Environment<'a> {
-    pub fn lookup(&self, key: String) -> Option<String> {
+    pub fn lookup(&self, key: &String) -> Option<String> {
         for scope in self.scope_stack.iter().rev() {
-            if let Some(value) = scope.local.get(&key) { 
+            if let Some(value) = scope.get(key) { 
                 return Some(value.to_string())
             }
         }
@@ -80,9 +76,21 @@ impl <'a> Environment<'a> {
     }
 }
 
+pub struct Scope {
+    local: HashMap<String, String>,
+}
+
 impl Scope {
-    fn new() -> Scope {
+    pub fn new() -> Scope {
         Scope{ local: HashMap::new() }
+    }
+
+    pub fn set(&mut self, name: String, value: String) {
+        self.local.insert(name, value);
+    }
+
+    pub fn get(&self, name: &String) -> Option<&String> {
+        self.local.get(name)
     }
 }
 
