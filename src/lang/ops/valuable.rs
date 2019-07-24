@@ -1,4 +1,5 @@
 use crate::lang::func::Value;
+use regex::{Regex,Captures};
 use super::*;
 
 pub trait Valuable {
@@ -26,8 +27,15 @@ impl Valuable for LiteralNode {
         match self {
             LiteralNode::Regex(regex) => Value::Regex(regex.clone()),
             LiteralNode::String(s, interpolate) => {
+                lazy_static! {
+                    static ref INTERPOLATOR: Regex = Regex::new(r"\$\{(?P<name>[a-zA-Z0-9_]+)\}").unwrap();
+                }
+
                 if *interpolate {
-                    Value::String(s.clone()) // TODO: Don't interpolate for the time being
+                    Value::String(INTERPOLATOR.replace_all(s, |capture: &Captures| -> String {
+                        let key = String::from(&capture["name"]);
+                        env.lookup(&key).unwrap_or(String::new())
+                    }).to_owned().to_string())
                 } else {
                     Value::String(s.clone())
                 }
