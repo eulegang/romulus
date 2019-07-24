@@ -1,7 +1,0 @@
-pokemon "Haunter" {
-	type = "Ghost"
-}
-
-pokemon "Noctowl" {
-	type = "Flying"
-}
