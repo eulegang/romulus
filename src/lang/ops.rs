@@ -6,7 +6,7 @@ pub trait Operation {
 }
 
 trait Selector {
-    fn select(&self, env: &Environment) -> bool;
+    fn select(&self, env: &mut Environment) -> bool;
 }
 
 impl Operation for Node {
@@ -21,9 +21,9 @@ impl Operation for BodyNode {
     fn perform(&self, env: &mut Environment) {
         match self {
             BodyNode::Bare(func_node) => func_node.perform(env),
-            BodyNode::Guard(sel_node, expr_node) => {
+            BodyNode::Guard(sel_node, node) => {
                 if sel_node.select(env) {
-                    expr_node.perform(env);
+                    node.perform(env);
                 }
             }
         }
@@ -56,7 +56,7 @@ impl Operation for FunctionNode {
 }
 
 impl Selector for SelectorNode {
-    fn select(&self, env: &Environment) -> bool {
+    fn select(&self, env: &mut Environment) -> bool {
         match self {
             SelectorNode::Match(match_node) => match_node.select(env),
             SelectorNode::Range(range_node) => range_node.select(env),
@@ -65,13 +65,30 @@ impl Selector for SelectorNode {
 }
 
 impl Selector for RangeNode {
-    fn select(&self, env: &Environment) -> bool {
-        unimplemented!()
+    fn select(&self, env: &mut Environment) -> bool {
+        let RangeNode(start, end) = self;
+
+        let next = if !env.range() {
+            if start.select(env) {
+                env.toggle_range();
+            }
+            env.range()
+        } else {
+            if end.select(env) {
+                env.toggle_range();
+                !env.range()
+            } else {
+                env.range()
+            }
+        };
+
+        env.next_range();
+        next
     }
 }
 
 impl Selector for MatchNode {
-    fn select(&self, env: &Environment) -> bool {
+    fn select(&self, env: &mut Environment) -> bool {
         match self {
             MatchNode::Index(idx) => env.lineno == *idx,
             MatchNode::Regex(rgx) => rgx.is_match(&env.line),
