@@ -2,14 +2,11 @@ mod lex;
 mod nodes;
 mod func;
 mod env;
-
 mod ops;
-mod meta;
 
 use std::io::{BufRead,Write};
 use env::Environment;
-use ops::Operation;
-use crate::lang::meta::{RangeCap};
+use ops::{Operation,RangeCap};
 
 pub struct Interpreter {
     node: nodes::Node
