@@ -7,7 +7,7 @@ pub struct Environment<'a> {
     pub line: String,
     pub func_reg: FunctionRegistry,
     scope_stack: Vec<Scope>,
-    pub out: &'a mut Write,
+    pub out: &'a mut dyn Write,
 
     range_states: Vec<Option<Scope>>,
     range_pos: usize,
