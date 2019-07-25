@@ -30,10 +30,7 @@ impl<'a> Environment<'a> {
 
 impl<'a> Environment<'a> {
     pub fn range(&self) -> bool {
-        match self.range_states[self.range_pos] {
-            None => false,
-            Some(_) => true,
-        }
+        self.range_states[self.range_pos].is_some()
     }
 
     pub fn next_range(&mut self) {
@@ -58,7 +55,7 @@ impl<'a> Environment<'a> {
 }
 
 impl<'a> Environment<'a> {
-    pub fn lookup(&self, key: &String) -> Option<String> {
+    pub fn lookup(&self, key: &str) -> Option<String> {
         for scope in self.scope_stack.iter().rev() {
             if let Some(value) = scope.get(key) {
                 return Some(value.to_string());
@@ -102,7 +99,7 @@ impl Scope {
         self.local.insert(name, value);
     }
 
-    pub fn get(&self, name: &String) -> Option<&String> {
+    pub fn get(&self, name: &str) -> Option<&String> {
         self.local.get(name)
     }
 }

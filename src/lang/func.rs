@@ -19,11 +19,11 @@ impl Display for Value {
 }
 
 pub struct FunctionRegistry {
-    funcs: HashMap<String, Box<Func>>,
+    funcs: HashMap<String, Func>,
 }
 
 impl FunctionRegistry {
-    pub fn get(&self, key: &str) -> Option<&Box<Func>> {
+    pub fn get(&self, key: &str) -> Option<&Func> {
         self.funcs.get(key)
     }
 }
@@ -32,9 +32,9 @@ impl Default for FunctionRegistry {
     fn default() -> FunctionRegistry {
         let mut funcs = HashMap::new();
 
-        funcs.insert(String::from("print"), Box::new(Func { proc: print_impl }));
+        funcs.insert(String::from("print"), Func { proc: print_impl });
 
-        FunctionRegistry { funcs: funcs }
+        FunctionRegistry { funcs }
     }
 }
 
@@ -51,5 +51,5 @@ fn print_impl(env: &mut Environment, args: &[Value]) {
         }
     }
 
-    let _ = write!(env, "\n");
+    let _ = writeln!(env);
 }

@@ -37,7 +37,7 @@ impl Valuable for LiteralNode {
                         INTERPOLATOR
                             .replace_all(s, |capture: &Captures| -> String {
                                 let key = String::from(&capture["name"]);
-                                env.lookup(&key).unwrap_or(String::new())
+                                env.lookup(&key).unwrap_or_default()
                             })
                             .to_owned()
                             .to_string(),

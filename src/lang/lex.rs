@@ -70,7 +70,7 @@ fn chomp_multi<T: Iterator<Item = char>>(
     let mut accepted = Vec::new();
 
     'base: while let Some(ch) = &mut iter.peek() {
-        let owned = ch.clone();
+        let owned = **ch;
 
         if chars.contains(&owned) {
             accepted.push(owned);
@@ -97,7 +97,7 @@ fn chomp_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) 
     let mut accepted = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
-        let owned: char = ch.clone();
+        let owned: char = **ch;
 
         if accept.contains(&owned) {
             accepted.push(owned);
@@ -115,7 +115,7 @@ fn chomp_until<T: Iterator<Item = char>>(iter: &mut Peekable<T>, terminator: cha
     let mut accepted: Vec<char> = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
-        let owned: char = ch.clone();
+        let owned: char = **ch;
 
         if owned != terminator {
             accepted.push(owned);
@@ -133,7 +133,7 @@ fn chomp_until_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[c
     let mut accepted: Vec<char> = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
-        let owned: char = ch.clone();
+        let owned: char = **ch;
 
         if !accept.contains(&owned) {
             accepted.push(owned);
@@ -161,10 +161,10 @@ fn get_number(vec: Vec<char>) -> i64 {
 pub(crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
     let tokens = full_lex(buf)?;
 
-    return Ok(tokens
+    Ok(tokens
         .into_iter()
         .filter(|t| t.significant())
-        .collect::<Vec<Token>>());
+        .collect::<Vec<Token>>())
 }
 
 pub(crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
@@ -179,7 +179,7 @@ pub(crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
             }
 
             '{' | '[' | '(' | '}' | ']' | ')' => {
-                tokens.push(Token::Paren(ch.clone()));
+                tokens.push(Token::Paren(*ch));
                 it.next();
             }
 

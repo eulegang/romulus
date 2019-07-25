@@ -21,13 +21,11 @@ impl Selector for RangeNode {
             if start.select(env) {
                 env.set_range_state(start.scope(env));
             }
-        } else {
-            if end.select(env) {
-                env.clear_range_state();
+        } else if end.select(env) {
+            env.clear_range_state();
 
-                if start.select(env) {
-                    env.set_range_state(start.scope(env));
-                }
+            if start.select(env) {
+                env.set_range_state(start.scope(env));
             }
         };
 

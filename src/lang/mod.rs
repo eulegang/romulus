@@ -17,7 +17,7 @@ impl Interpreter {
         let tokens = lex::lex(buf)?;
         let node = nodes::parse(tokens)?;
 
-        return Ok(Interpreter { node: node });
+        Ok(Interpreter { node })
     }
 
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {

@@ -73,7 +73,7 @@ impl PartialEq for MatchNode {
             return true;
         }
 
-        return false;
+        false
     }
 }
 
@@ -87,7 +87,7 @@ impl PartialEq for LiteralNode {
             return ss == os && si == oi;
         }
 
-        return false;
+        false
     }
 }
 
@@ -98,33 +98,33 @@ pub(crate) fn parse(tokens: Vec<Token>) -> Result<Node, String> {
         return Err("Did not consume the whole program".to_string());
     }
 
-    return Ok(node);
+    Ok(node)
 }
 
 trait Parsable: Sized {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(Self, usize), String>;
-    fn try_parse(tokens: &Vec<Token>, pos: usize) -> Option<(Self, usize)> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(Self, usize), String>;
+    fn try_parse(tokens: &[Token], pos: usize) -> Option<(Self, usize)> {
         Self::parse(&tokens, pos).ok()
     }
 }
 
 impl Parsable for Node {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(Node, usize), String> {
-        let mut nodes = Vec::new();
+    fn parse(tokens: &[Token], pos: usize) -> Result<(Node, usize), String> {
+        let mut subnodes = Vec::new();
         let mut cur = pos;
 
         while cur != tokens.len() {
             let (body_node, next) = BodyNode::parse(&tokens, cur)?;
             cur = next;
-            nodes.push(body_node);
+            subnodes.push(body_node);
         }
 
-        return Ok((Node { subnodes: nodes }, cur));
+        Ok((Node { subnodes }, cur))
     }
 }
 
 impl Parsable for BodyNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(BodyNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(BodyNode, usize), String> {
         if let Some((sel, cur)) = SelectorNode::try_parse(&tokens, pos) {
             if Some(&Token::Paren('{')) != tokens.get(cur) {
                 return Err(format!("expected {{ but received: {:?}", tokens.get(cur)));
@@ -146,7 +146,7 @@ impl Parsable for BodyNode {
             }
 
             Ok((
-                BodyNode::Guard(sel, Node { subnodes: subnodes }),
+                BodyNode::Guard(sel, Node {  subnodes }),
                 current + 1,
             ))
         } else {
@@ -157,7 +157,7 @@ impl Parsable for BodyNode {
 }
 
 impl Parsable for SelectorNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(SelectorNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(SelectorNode, usize), String> {
         let (s, next) = MatchNode::parse(tokens, pos)?;
 
         if Some(&Token::Comma) != tokens.get(next) {
@@ -171,7 +171,7 @@ impl Parsable for SelectorNode {
 }
 
 impl Parsable for MatchNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(MatchNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(MatchNode, usize), String> {
         let token = guard_eof!(tokens.get(pos));
 
         match token {
@@ -190,7 +190,7 @@ impl Parsable for MatchNode {
 }
 
 impl Parsable for RangeNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(RangeNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(RangeNode, usize), String> {
         let (start_match, after_start) = MatchNode::parse(&tokens, pos)?;
 
         if Some(&Token::Comma) != tokens.get(after_start) {
@@ -207,7 +207,7 @@ impl Parsable for RangeNode {
 }
 
 impl Parsable for LiteralNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(LiteralNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(LiteralNode, usize), String> {
         let token = guard_eof!(tokens.get(pos));
 
         match token {
@@ -227,7 +227,7 @@ impl Parsable for LiteralNode {
 }
 
 impl Parsable for FunctionNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(FunctionNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(FunctionNode, usize), String> {
         let token = guard_eof!(tokens.get(pos));
 
         let identifier = match token {
@@ -272,18 +272,14 @@ impl Parsable for FunctionNode {
             cur += 1;
         }
 
-        Ok((
-            FunctionNode {
-                name: identifier.to_string(),
-                args: args,
-            },
-            cur + 1,
-        ))
+        let name = identifier.to_string();
+
+        Ok(( FunctionNode { name, args, }, cur + 1,))
     }
 }
 
 impl Parsable for ExpressionNode {
-    fn parse(tokens: &Vec<Token>, pos: usize) -> Result<(ExpressionNode, usize), String> {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(ExpressionNode, usize), String> {
         try_rewrap!(LiteralNode, ExpressionNode::Literal, tokens, pos);
 
         if let Some(Token::Identifier(name)) = tokens.get(pos) {
