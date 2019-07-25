@@ -1,6 +1,8 @@
 
 # Romulus
 
+[![Build Status](https://travis-ci.org/eulegang/romulus.svg?branch=master)](https://travis-ci.org/eulegang/romulus)
+
 A mondern alternative to sed
 
 ## Sample
