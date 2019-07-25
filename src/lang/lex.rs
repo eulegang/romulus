@@ -43,7 +43,10 @@ impl Token {
 }
 
 #[inline]
-fn chomp_range<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: RangeInclusive<char>) -> Vec<char> {
+fn chomp_range<T: Iterator<Item = char>>(
+    iter: &mut Peekable<T>,
+    accept: RangeInclusive<char>,
+) -> Vec<char> {
     let mut accepted = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
@@ -59,7 +62,11 @@ fn chomp_range<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: RangeIn
 }
 
 #[inline]
-fn chomp_multi<T: Iterator<Item = char>>(iter: &mut Peekable<T>, chars: &[char], accepts: &[RangeInclusive<char>]) -> Vec<char> {
+fn chomp_multi<T: Iterator<Item = char>>(
+    iter: &mut Peekable<T>,
+    chars: &[char],
+    accepts: &[RangeInclusive<char>],
+) -> Vec<char> {
     let mut accepted = Vec::new();
 
     'base: while let Some(ch) = &mut iter.peek() {
@@ -68,18 +75,18 @@ fn chomp_multi<T: Iterator<Item = char>>(iter: &mut Peekable<T>, chars: &[char],
         if chars.contains(&owned) {
             accepted.push(owned);
             iter.next();
-            continue
+            continue;
         }
 
-        for accept in accepts { 
+        for accept in accepts {
             if accept.contains(&owned) {
                 accepted.push(owned);
                 iter.next();
-                continue 'base
-            } 
+                continue 'base;
+            }
         }
 
-        break
+        break;
     }
 
     accepted
@@ -128,7 +135,7 @@ fn chomp_until_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[c
     while let Some(ch) = &mut iter.peek() {
         let owned: char = ch.clone();
 
-        if !accept.contains(&owned){
+        if !accept.contains(&owned) {
             accepted.push(owned);
             iter.next();
         } else {
@@ -154,21 +161,24 @@ fn get_number(vec: Vec<char>) -> i64 {
 pub(crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
     let tokens = full_lex(buf)?;
 
-    return Ok(tokens.into_iter().filter(|t| t.significant()).collect::<Vec<Token>>())
+    return Ok(tokens
+        .into_iter()
+        .filter(|t| t.significant())
+        .collect::<Vec<Token>>());
 }
 
-pub (crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
+pub(crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut it = buf.chars().peekable();
 
     while let Some(ch) = it.peek() {
         match ch {
-            '0' ..= '9' => {
-                let nums = chomp_range(&mut it, '0' ..= '9');
+            '0'..='9' => {
+                let nums = chomp_range(&mut it, '0'..='9');
                 tokens.push(Token::Number(get_number(nums)));
             }
 
-            '{' | '[' | '(' | '}' | ']' | ')'  => {
+            '{' | '[' | '(' | '}' | ']' | ')' => {
                 tokens.push(Token::Paren(ch.clone()));
                 it.next();
             }
@@ -225,8 +235,8 @@ pub (crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                 tokens.push(Token::String(content, false));
             }
 
-            '_' | 'a' ..= 'z' | 'A' ..= 'Z' => {
-                let chars = chomp_multi(&mut it, &['_'], &['a' ..= 'z', 'A' ..= 'Z', '0' ..= '9']);
+            '_' | 'a'..='z' | 'A'..='Z' => {
+                let chars = chomp_multi(&mut it, &['_'], &['a'..='z', 'A'..='Z', '0'..='9']);
                 let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::Identifier(content));
@@ -236,7 +246,6 @@ pub (crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                 return Err(format!("unknown character: '{}'", a));
             }
         }
-
     }
 
     Ok(tokens)
@@ -253,26 +262,40 @@ mod tests {
 
     #[test]
     fn test_lex_ignores_white_space() {
-        assert_eq!(full_lex("\n \t1234 1\n\r"), Ok(vec![Token::Newline, Token::Number(1234), Token::Number(1), Token::Newline]));
+        assert_eq!(
+            full_lex("\n \t1234 1\n\r"),
+            Ok(vec![
+                Token::Newline,
+                Token::Number(1234),
+                Token::Number(1),
+                Token::Newline
+            ])
+        );
     }
 
     #[test]
     fn test_lex_context() {
-        assert_eq!(full_lex("1 { }"), Ok(vec![Token::Number(1), Token::Paren('{'), Token::Paren('}')]));
+        assert_eq!(
+            full_lex("1 { }"),
+            Ok(vec![Token::Number(1), Token::Paren('{'), Token::Paren('}')])
+        );
     }
 
     #[test]
     fn test_lex_regex() {
-        assert_eq!(full_lex("/.*/iU"), Ok(vec![Token::Regex(".*".to_string(), "iU".to_string())]));
+        assert_eq!(
+            full_lex("/.*/iU"),
+            Ok(vec![Token::Regex(".*".to_string(), "iU".to_string())])
+        );
     }
 
     #[test]
     fn test_lex_comment() {
         let tokens = vec![
-                   Token::Number(42), 
-                   Token::Comment("some comment".to_string()), 
-                   Token::Newline,
-                   Token::Regex("test *".to_string(), "i".to_string())
+            Token::Number(42),
+            Token::Comment("some comment".to_string()),
+            Token::Newline,
+            Token::Regex("test *".to_string(), "i".to_string()),
         ];
 
         assert_eq!(full_lex("42 #some comment\n  /test */i"), Ok(tokens));
@@ -289,17 +312,19 @@ mod tests {
             Token::Paren(')'),
         ];
 
-        assert_eq!(full_lex("subst(/(?P<name>[a-z]+):/,\"Name: ${name}\")"), Ok(tokens));
+        assert_eq!(
+            full_lex("subst(/(?P<name>[a-z]+):/,\"Name: ${name}\")"),
+            Ok(tokens)
+        );
     }
 
     #[test]
     fn test_removed() {
         let tokens = vec![
-                   Token::Number(42), 
-                   Token::Regex("test *".to_string(), "i".to_string())
+            Token::Number(42),
+            Token::Regex("test *".to_string(), "i".to_string()),
         ];
 
         assert_eq!(lex("42 #some comment\n  /test */i"), Ok(tokens));
     }
-}   
-
+}

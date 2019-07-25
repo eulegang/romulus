@@ -1,15 +1,15 @@
+mod env;
+mod func;
 mod lex;
 mod nodes;
-mod func;
-mod env;
 mod ops;
 
-use std::io::{BufRead,Write};
 use env::Environment;
-use ops::{Operation,RangeCap};
+use ops::{Operation, RangeCap};
+use std::io::{BufRead, Write};
 
 pub struct Interpreter {
-    node: nodes::Node
+    node: nodes::Node,
 }
 
 impl Interpreter {
@@ -17,9 +17,7 @@ impl Interpreter {
         let tokens = lex::lex(buf)?;
         let node = nodes::parse(tokens)?;
 
-        return Ok(Interpreter{
-            node: node
-        })
+        return Ok(Interpreter { node: node });
     }
 
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
@@ -36,22 +34,19 @@ impl Interpreter {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     macro_rules! run_interpreter {
-        ($prog: expr, $input: expr) => {
-            {
-                let interpreter = Interpreter::new($prog).unwrap();
-                let mut out = Vec::new();
-                let mut sin = $input.as_bytes();
+        ($prog: expr, $input: expr) => {{
+            let interpreter = Interpreter::new($prog).unwrap();
+            let mut out = Vec::new();
+            let mut sin = $input.as_bytes();
 
-                interpreter.process(&mut sin, &mut out);
-                String::from_utf8(out).unwrap()
-            }
-        }
+            interpreter.process(&mut sin, &mut out);
+            String::from_utf8(out).unwrap()
+        }};
     }
 
     #[test]

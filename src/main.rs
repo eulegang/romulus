@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate lazy_static;
 extern crate clap;
@@ -6,24 +5,28 @@ extern crate clap;
 mod lang;
 
 use clap::{App, Arg};
-use std::process;
 use std::fs::File;
-use std::io::{Read,stdin,stdout};
+use std::io::{stdin, stdout, Read};
+use std::process;
 
 fn main() {
     let matches = App::new("romulus")
         .version("0.1.0")
         .about("a text stream editor")
-        .arg(Arg::with_name("expr")
-             .short("e")
-             .long("expr")
-             .takes_value(true)
-             .help("romulus expression"))
-        .arg(Arg::with_name("file")
-             .short("f")
-             .long("file")
-             .takes_value(true)
-             .help("file with romulus program"))
+        .arg(
+            Arg::with_name("expr")
+                .short("e")
+                .long("expr")
+                .takes_value(true)
+                .help("romulus expression"),
+        )
+        .arg(
+            Arg::with_name("file")
+                .short("f")
+                .long("file")
+                .takes_value(true)
+                .help("file with romulus program"),
+        )
         .get_matches();
 
     let interpreter = match (matches.value_of("expr"), matches.value_of("file")) {
@@ -56,7 +59,7 @@ fn interpreter_expr(expr: &str) -> lang::Interpreter {
 }
 
 fn interpreter_file(path: &str) -> lang::Interpreter {
-    let mut file = match File::open(path)  {
+    let mut file = match File::open(path) {
         Ok(f) => f,
         Err(err) => {
             eprintln!("{}", err);

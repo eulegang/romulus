@@ -45,5 +45,3 @@ impl ScopeProvider for MatchNode {
         scope
     }
 }
-
-

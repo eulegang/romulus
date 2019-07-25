@@ -1,7 +1,6 @@
-
-use std::collections::HashMap;
 use super::env::Environment;
 use regex::Regex;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::io::Write;
 
@@ -20,7 +19,7 @@ impl Display for Value {
 }
 
 pub struct FunctionRegistry {
-    funcs: HashMap<String, Box<Func>>
+    funcs: HashMap<String, Box<Func>>,
 }
 
 impl FunctionRegistry {
@@ -33,11 +32,9 @@ impl Default for FunctionRegistry {
     fn default() -> FunctionRegistry {
         let mut funcs = HashMap::new();
 
-        funcs.insert(String::from("print"), Box::new(Func{ proc: print_impl }));
+        funcs.insert(String::from("print"), Box::new(Func { proc: print_impl }));
 
-        FunctionRegistry {
-            funcs: funcs,
-        }
+        FunctionRegistry { funcs: funcs }
     }
 }
 

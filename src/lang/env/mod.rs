@@ -1,7 +1,6 @@
-
-use std::io::{Write};
-use std::collections::HashMap;
 use super::func::{FunctionRegistry, Value};
+use std::collections::HashMap;
+use std::io::Write;
 
 pub struct Environment<'a> {
     pub lineno: i64,
@@ -14,9 +13,9 @@ pub struct Environment<'a> {
     range_pos: usize,
 }
 
-impl <'a> Environment<'a> {
+impl<'a> Environment<'a> {
     pub fn new<W: Write>(w: &'a mut W, num_ranges: usize) -> Environment<'a> {
-        Environment{
+        Environment {
             lineno: 0,
             line: String::new(),
             func_reg: FunctionRegistry::default(),
@@ -29,7 +28,7 @@ impl <'a> Environment<'a> {
     }
 }
 
-impl <'a> Environment<'a> {
+impl<'a> Environment<'a> {
     pub fn range(&self) -> bool {
         match self.range_states[self.range_pos] {
             None => false,
@@ -58,11 +57,11 @@ impl <'a> Environment<'a> {
     }
 }
 
-impl <'a> Environment<'a> {
+impl<'a> Environment<'a> {
     pub fn lookup(&self, key: &String) -> Option<String> {
         for scope in self.scope_stack.iter().rev() {
-            if let Some(value) = scope.get(key) { 
-                return Some(value.to_string())
+            if let Some(value) = scope.get(key) {
+                return Some(value.to_string());
             }
         }
 
@@ -94,7 +93,9 @@ pub struct Scope {
 
 impl Scope {
     pub fn new() -> Scope {
-        Scope{ local: HashMap::new() }
+        Scope {
+            local: HashMap::new(),
+        }
     }
 
     pub fn set(&mut self, name: String, value: String) {
@@ -106,7 +107,7 @@ impl Scope {
     }
 }
 
-impl <'a> Write for Environment<'a> {
+impl<'a> Write for Environment<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.out.write(buf)
     }
