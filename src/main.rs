@@ -4,7 +4,7 @@ extern crate clap;
 
 mod lang;
 
-use clap::{App, Arg, ArgMatches};
+use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read};
 use std::process;
@@ -27,6 +27,11 @@ fn main() {
                 .takes_value(true)
                 .help("file with romulus program"),
         )
+        .group(
+            ArgGroup::with_name("program")
+                .args(&["file", "expr"])
+                .required(true),
+        )
         .arg(Arg::with_name("inputs").min_values(1))
         .get_matches();
 
@@ -38,14 +43,7 @@ fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
     match (matches.value_of("expr"), matches.value_of("file")) {
         (Some(expr), None) => interpreter_expr(expr),
         (None, Some(filename)) => interpreter_file(filename),
-        (None, None) => {
-            eprintln!("Must specify an expression or a file");
-            process::exit(1);
-        }
-        (Some(_), Some(_)) => {
-            eprintln!("Must specify an expression or a file not both");
-            process::exit(1);
-        }
+        _ => panic!("clap guard against this"),
     }
 }
 
