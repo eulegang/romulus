@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
+
+#[macro_use]
 extern crate clap;
 
 mod lang;
@@ -11,7 +13,7 @@ use std::process;
 
 fn main() {
     let matches = App::new("romulus")
-        .version("0.1.2")
+        .version(crate_version!())
         .about("a text stream editor")
         .arg(
             Arg::with_name("expr")
