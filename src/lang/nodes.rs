@@ -145,10 +145,7 @@ impl Parsable for BodyNode {
                 ));
             }
 
-            Ok((
-                BodyNode::Guard(sel, Node {  subnodes }),
-                current + 1,
-            ))
+            Ok((BodyNode::Guard(sel, Node { subnodes }), current + 1))
         } else {
             let (node, next) = FunctionNode::parse(&tokens, pos)?;
             Ok((BodyNode::Bare(node), next))
@@ -274,7 +271,7 @@ impl Parsable for FunctionNode {
 
         let name = identifier.to_string();
 
-        Ok(( FunctionNode { name, args, }, cur + 1,))
+        Ok((FunctionNode { name, args }, cur + 1))
     }
 }
 
