@@ -11,7 +11,7 @@ use std::process;
 
 fn main() {
     let matches = App::new("romulus")
-        .version("0.1.0")
+        .version("0.1.2")
         .about("a text stream editor")
         .arg(
             Arg::with_name("expr")
