@@ -1,7 +1,7 @@
 [package]
 name = "romulus"
 description = "a stream editor like sed"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["eulegang<eulegang@gmail.com>"]
 repository = "https://github.com/eulegang/romulus"
 license = "MIT"
@@ -13,3 +13,4 @@ edition = "2018"
 regex = "1"
 clap = "~2.27.0"
 lazy_static = "1.3.0"
+tempfile = "3.1.0"

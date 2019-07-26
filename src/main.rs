@@ -4,10 +4,12 @@ extern crate lazy_static;
 #[macro_use]
 extern crate clap;
 
+extern crate tempfile;
+
 mod lang;
 
 use clap::{App, Arg, ArgGroup, ArgMatches};
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::process;
 
@@ -36,16 +38,32 @@ fn main() {
                 .takes_value(true)
                 .help("output file"),
         )
+        .arg(
+            Arg::with_name("inplace")
+                .short("i")
+                .long("inplace")
+                .takes_value(true)
+                .requires("inputs")
+                .help("inplace replacement backup extension")
+        )
         .group(
             ArgGroup::with_name("program")
                 .args(&["file", "expr"])
                 .required(true),
         )
+        .group(
+            ArgGroup::with_name("output_flow")
+                .args(&["output", "inplace"])
+        )
         .arg(Arg::with_name("inputs").min_values(1))
         .get_matches();
 
     let interpreter = create_interpreter(&matches);
-    process_streams(interpreter, &matches);
+    if let Some(ext) = matches.value_of("inplace") {
+        process_inplace(interpreter, ext, &mut matches.values_of("inputs").unwrap())
+    } else {
+        process_streams(interpreter, &matches);
+    }
 }
 
 fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
@@ -53,6 +71,41 @@ fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
         (Some(expr), None) => interpreter_expr(expr),
         (None, Some(filename)) => interpreter_file(filename),
         _ => panic!("clap guard against this"),
+    }
+}
+
+fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: lang::Interpreter, ext: &str, inputs: &'a mut I) {
+    for input in inputs {
+        let fin = match File::open(&input) {
+            Ok(f) => f,
+            Err(err) => {
+                eprintln!("unable to read file '{}': {}", input, err);
+                process::exit(1);
+            }
+        };
+
+        let mut fout = match tempfile::NamedTempFile::new() {
+            Ok(f) => f,
+            Err(err) => {
+                eprintln!("unable to create temp file {}", err);
+                process::exit(1);
+            }
+        };
+
+        interpreter.process(&mut BufReader::new(fin), &mut fout);
+
+        if ext != "" {
+            if let Err(err) = fs::rename(&input, format!("{}.{}", input, ext)) {
+                drop(fout);
+                eprintln!("unable to rename {}.{} -> {}: {}", input, ext, input, err);
+                process::exit(1);
+            }
+        }
+
+        if let Err(err) = fout.persist(input) {
+            eprintln!("unable to replace {}: {}", input, err);
+            process::exit(1);
+        };
     }
 }
 
