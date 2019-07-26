@@ -4,9 +4,9 @@ extern crate clap;
 
 mod lang;
 
-use clap::{App, Arg};
+use clap::{App, Arg, ArgMatches};
 use std::fs::File;
-use std::io::{stdin, stdout, Read};
+use std::io::{stdin, stdout, BufReader, Read};
 use std::process;
 
 fn main() {
@@ -27,9 +27,15 @@ fn main() {
                 .takes_value(true)
                 .help("file with romulus program"),
         )
+        .arg(Arg::with_name("inputs").min_values(1))
         .get_matches();
 
-    let interpreter = match (matches.value_of("expr"), matches.value_of("file")) {
+    let interpreter = create_interpreter(&matches);
+    process_streams(interpreter, &matches);
+}
+
+fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
+    match (matches.value_of("expr"), matches.value_of("file")) {
         (Some(expr), None) => interpreter_expr(expr),
         (None, Some(filename)) => interpreter_file(filename),
         (None, None) => {
@@ -40,12 +46,29 @@ fn main() {
             eprintln!("Must specify an expression or a file not both");
             process::exit(1);
         }
-    };
+    }
+}
 
-    let sin = stdin();
-    let mut sin_lock = sin.lock();
-    let mut sout = stdout();
-    interpreter.process(&mut sin_lock, &mut sout);
+fn process_streams(interpreter: lang::Interpreter, matches: &ArgMatches) {
+    let mut output = stdout();
+    if let Some(inputs) = matches.values_of("inputs") {
+        for input in inputs {
+            let file = match File::open(input) {
+                Ok(f) => f,
+                Err(_) => {
+                    eprintln!("Unable to read {}", input);
+                    process::exit(1);
+                }
+            };
+
+            interpreter.process(&mut BufReader::new(file), &mut output);
+        }
+    } else {
+        let sin = stdin();
+        let mut sin_lock = sin.lock();
+
+        interpreter.process(&mut sin_lock, &mut output);
+    }
 }
 
 fn interpreter_expr(expr: &str) -> lang::Interpreter {
