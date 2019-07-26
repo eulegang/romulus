@@ -57,7 +57,7 @@ fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
 }
 
 fn process_streams(interpreter: lang::Interpreter, matches: &ArgMatches) {
-    let mut output: Box<Write> = match matches.value_of("output") {
+    let mut output: Box<dyn Write> = match matches.value_of("output") {
         Some(filename) => match File::create(filename) {
             Ok(f) => Box::new(f),
             Err(_) => {
