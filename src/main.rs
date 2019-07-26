@@ -6,7 +6,7 @@ mod lang;
 
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::File;
-use std::io::{stdin, stdout, BufReader, Read};
+use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::process;
 
 fn main() {
@@ -26,6 +26,13 @@ fn main() {
                 .long("file")
                 .takes_value(true)
                 .help("file with romulus program"),
+        )
+        .arg(
+            Arg::with_name("output")
+                .short("o")
+                .long("out")
+                .takes_value(true)
+                .help("output file"),
         )
         .group(
             ArgGroup::with_name("program")
@@ -48,7 +55,18 @@ fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
 }
 
 fn process_streams(interpreter: lang::Interpreter, matches: &ArgMatches) {
-    let mut output = stdout();
+    let mut output: Box<Write> = match matches.value_of("output") {
+        Some(filename) => match File::create(filename) {
+            Ok(f) => Box::new(f),
+            Err(_) => {
+                eprintln!("Unable to create {}", filename);
+                process::exit(1);
+            }
+        },
+
+        None => Box::new(stdout()),
+    };
+
     if let Some(inputs) = matches.values_of("inputs") {
         for input in inputs {
             let file = match File::open(input) {
