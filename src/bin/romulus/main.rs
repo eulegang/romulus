@@ -8,9 +8,10 @@ extern crate romulus;
 
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::{self, File};
-use std::io::{stdin, stdout, BufReader, Read, Write};
+use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
 use romulus::lang::Interpreter;
+use std::fmt::Display;
 
 fn main() {
     let matches = App::new("romulus")
@@ -66,11 +67,15 @@ fn main() {
 }
 
 fn create_interpreter(matches: &ArgMatches) -> Interpreter {
-    match (matches.value_of("expr"), matches.value_of("file")) {
-        (Some(expr), None) => interpreter_expr(expr),
-        (None, Some(filename)) => interpreter_file(filename),
-        _ => panic!("clap guard against this"),
+    if let Some(expr) = matches.value_of("expr") {
+        return ok_or_exit(Interpreter::new(expr));
     }
+
+    if let Some(filename) = matches.value_of("file") {
+        return ok_or_exit(Interpreter::file(filename))
+    }
+
+    unreachable!()
 }
 
 fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: Interpreter, ext: &str, inputs: &'a mut I) {
@@ -141,9 +146,10 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
     }
 }
 
-fn interpreter_expr(expr: &str) -> Interpreter {
-    match Interpreter::new(expr) {
-        Ok(int) => int,
+#[inline]
+fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
+    match result {
+        Ok(t) => t,
         Err(msg) => {
             eprintln!("{}", msg);
             process::exit(1);
@@ -151,26 +157,3 @@ fn interpreter_expr(expr: &str) -> Interpreter {
     }
 }
 
-fn interpreter_file(path: &str) -> Interpreter {
-    let mut file = match File::open(path) {
-        Ok(f) => f,
-        Err(err) => {
-            eprintln!("{}", err);
-            process::exit(1);
-        }
-    };
-
-    let mut buf = String::new();
-    if let Err(err) = file.read_to_string(&mut buf) {
-        eprintln!("{}", err);
-        process::exit(1);
-    }
-
-    match Interpreter::new(&buf) {
-        Ok(f) => f,
-        Err(msg) => {
-            eprintln!("{}", msg);
-            process::exit(1);
-        }
-    }
-}

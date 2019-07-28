@@ -15,8 +15,8 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
-    pub fn new(buf: &str) -> Result<Interpreter, String> {
-        let tokens = lex::lex(buf)?;
+    pub fn new<S: AsRef<str>>(buf: S) -> Result<Interpreter, String> {
+        let tokens = lex::lex(buf.as_ref())?;
         let node = nodes::parse(tokens)?;
 
         Ok(Interpreter { node })
