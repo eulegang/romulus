@@ -1,17 +1,16 @@
-#[macro_use]
-extern crate lazy_static;
 
 #[macro_use]
 extern crate clap;
 
 extern crate tempfile;
 
-mod lang;
+extern crate romulus;
 
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::process;
+use romulus::lang::Interpreter;
 
 fn main() {
     let matches = App::new("romulus")
@@ -66,7 +65,7 @@ fn main() {
     }
 }
 
-fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
+fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     match (matches.value_of("expr"), matches.value_of("file")) {
         (Some(expr), None) => interpreter_expr(expr),
         (None, Some(filename)) => interpreter_file(filename),
@@ -74,7 +73,7 @@ fn create_interpreter(matches: &ArgMatches) -> lang::Interpreter {
     }
 }
 
-fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: lang::Interpreter, ext: &str, inputs: &'a mut I) {
+fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: Interpreter, ext: &str, inputs: &'a mut I) {
     for input in inputs {
         let fin = match File::open(&input) {
             Ok(f) => f,
@@ -109,7 +108,7 @@ fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: lang::Interpreter
     }
 }
 
-fn process_streams(interpreter: lang::Interpreter, matches: &ArgMatches) {
+fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
     let mut output: Box<dyn Write> = match matches.value_of("output") {
         Some(filename) => match File::create(filename) {
             Ok(f) => Box::new(f),
@@ -142,8 +141,8 @@ fn process_streams(interpreter: lang::Interpreter, matches: &ArgMatches) {
     }
 }
 
-fn interpreter_expr(expr: &str) -> lang::Interpreter {
-    match lang::Interpreter::new(expr) {
+fn interpreter_expr(expr: &str) -> Interpreter {
+    match Interpreter::new(expr) {
         Ok(int) => int,
         Err(msg) => {
             eprintln!("{}", msg);
@@ -152,7 +151,7 @@ fn interpreter_expr(expr: &str) -> lang::Interpreter {
     }
 }
 
-fn interpreter_file(path: &str) -> lang::Interpreter {
+fn interpreter_file(path: &str) -> Interpreter {
     let mut file = match File::open(path) {
         Ok(f) => f,
         Err(err) => {
@@ -167,7 +166,7 @@ fn interpreter_file(path: &str) -> lang::Interpreter {
         process::exit(1);
     }
 
-    match lang::Interpreter::new(&buf) {
+    match Interpreter::new(&buf) {
         Ok(f) => f,
         Err(msg) => {
             eprintln!("{}", msg);
