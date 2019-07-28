@@ -1,5 +1,5 @@
 use super::*;
-use crate::lang::func::Value;
+use crate::func::Value;
 use regex::{Captures, Regex};
 
 pub trait Valuable {

@@ -10,7 +10,7 @@ use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
-use romulus::lang::Interpreter;
+use romulus::Interpreter;
 use std::fmt::Display;
 
 fn main() {

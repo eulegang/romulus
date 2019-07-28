@@ -1,5 +1,5 @@
 use super::*;
-use crate::lang::func::Value;
+use crate::func::Value;
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
