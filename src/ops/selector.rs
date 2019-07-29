@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::*;
 
 pub trait Selector {
     fn select(&self, env: &mut Environment) -> bool;

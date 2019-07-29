@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::*;
 
 pub trait ScopeProvider {
     fn scope(&self, env: &Environment) -> Scope;
