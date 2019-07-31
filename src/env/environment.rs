@@ -1,6 +1,8 @@
 use crate::func::{FunctionRegistry, Value};
 use std::io::Write;
-use super::Scope;
+use super::{Scope, RangeScopeTracker};
+use crate::nodes::Node;
+use crate::ops::RangeCap;
 
 pub struct Environment<'a> {
     pub lineno: i64,
@@ -8,49 +10,19 @@ pub struct Environment<'a> {
     pub func_reg: FunctionRegistry,
     scope_stack: Vec<Scope>,
     pub out: &'a mut dyn Write,
-
-    range_states: Vec<Option<Scope>>,
-    range_pos: usize,
+    pub(crate) tracker: RangeScopeTracker,
 }
 
 impl<'a> Environment<'a> {
-    pub fn new<W: Write>(w: &'a mut W, num_ranges: usize) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, node: &Node) -> Environment<'a> {
         Environment {
             lineno: 0,
             line: String::new(),
             func_reg: FunctionRegistry::default(),
             scope_stack: Vec::new(),
             out: w,
-
-            range_states: vec![None; num_ranges],
-            range_pos: 0,
+            tracker: RangeScopeTracker::new(node.num_ranges()),
         }
-    }
-}
-
-impl<'a> Environment<'a> {
-    pub fn range(&self) -> bool {
-        self.range_states[self.range_pos].is_some()
-    }
-
-    pub fn next_range(&mut self) {
-        self.range_pos = (self.range_pos + 1) % self.range_states.len();
-    }
-
-    pub fn range_scope(&self) -> &Option<Scope> {
-        &self.range_states[self.range_pos]
-    }
-
-    pub fn set_range_state(&mut self, scope: Scope) {
-        self.range_states[self.range_pos] = Some(scope)
-    }
-
-    pub fn clear_range_state(&mut self) {
-        self.range_states[self.range_pos] = None
-    }
-
-    pub fn reset_range(&mut self) {
-        self.range_pos = 0;
     }
 }
 
@@ -65,11 +37,11 @@ impl<'a> Environment<'a> {
         None
     }
 
-    pub fn push(&mut self, scope: Scope) {
+    pub(crate) fn push(&mut self, scope: Scope) {
         self.scope_stack.push(scope);
     }
 
-    pub fn pop(&mut self) {
+    pub(crate) fn pop(&mut self) {
         self.scope_stack.pop();
     }
 

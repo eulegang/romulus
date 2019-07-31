@@ -16,7 +16,7 @@ impl ScopeProvider for SelectorNode {
 
 impl ScopeProvider for RangeNode {
     fn scope(&self, env: &Environment) -> Scope {
-        if let Some(scope) = env.range_scope() {
+        if let Some(scope) = env.tracker.get() {
             scope.clone()
         } else {
             Scope::new()

@@ -18,20 +18,20 @@ impl Selector for RangeNode {
     fn select(&self, env: &mut Environment) -> bool {
         let RangeNode(start, end) = self;
 
-        if !env.range() {
+        if !env.tracker.in_range() {
             if start.select(env) {
-                env.set_range_state(start.scope(env));
+                env.tracker.set(start.scope(env));
             }
         } else if end.select(env) {
-            env.clear_range_state();
+            env.tracker.clear();
 
             if start.select(env) {
-                env.set_range_state(start.scope(env));
+                env.tracker.set(start.scope(env));
             }
         };
 
-        let next = env.range();
-        env.next_range();
+        let next = env.tracker.in_range();
+        env.tracker.next();
         next
     }
 }

@@ -7,11 +7,11 @@ pub struct Scope {
 
 impl Scope {
     pub fn new() -> Scope {
-        Scope {
-            local: HashMap::new(),
-        }
+        Scope { local: HashMap::new() }
     }
+}
 
+impl Scope {
     pub fn set(&mut self, name: String, value: String) {
         self.local.insert(name, value);
     }

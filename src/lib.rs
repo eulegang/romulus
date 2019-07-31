@@ -1,15 +1,16 @@
+#![allow(clippy::new_without_default)]
 
 #[macro_use]
 extern crate lazy_static;
 
 mod lex;
-mod env;
+pub mod env;
 mod func;
 mod ops;
 mod nodes;
 
 use env::Environment;
-use ops::{Operation, RangeCap};
+use ops::Operation;
 use std::io::{BufRead, Write, Read};
 use std::path::Path;
 use std::fs::File;
@@ -42,14 +43,14 @@ impl Interpreter {
 
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
         let mut iter = sin.lines();
-        let mut env = Environment::new(sout, self.node.num_ranges());
+        let mut env = Environment::new(sout, &self.node);
 
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;
             env.line = line;
 
             self.node.perform(&mut env);
-            env.reset_range();
+            env.tracker.reset();
         }
     }
 }

@@ -20,46 +20,46 @@ macro_rules! try_rewrap {
 }
 
 #[derive(Debug)]
-pub(crate) enum LiteralNode {
+pub enum LiteralNode {
     Regex(Box<Regex>),
     String(String, bool),
 }
 
 #[derive(Debug)]
-pub(crate) enum MatchNode {
+pub enum MatchNode {
     Index(i64),
     Regex(Box<Regex>),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct RangeNode(pub MatchNode, pub MatchNode);
+pub struct RangeNode(pub MatchNode, pub MatchNode);
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum SelectorNode {
+pub enum SelectorNode {
     Match(MatchNode),
     Range(RangeNode),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum ExpressionNode {
+pub enum ExpressionNode {
     Literal(LiteralNode),
     Identifier(String),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct FunctionNode {
+pub struct FunctionNode {
     pub(crate) name: String,
     pub(crate) args: Vec<ExpressionNode>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum BodyNode {
+pub enum BodyNode {
     Bare(FunctionNode),
     Guard(SelectorNode, Node),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Node {
+pub struct Node {
     pub(crate) subnodes: Vec<BodyNode>,
 }
 
