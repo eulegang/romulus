@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod lex;
+pub mod lex;
 pub mod env;
 mod func;
 mod ops;

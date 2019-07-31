@@ -2,7 +2,7 @@ use std::iter::Peekable;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Token {
+pub enum Token {
     Paren(char),
     Number(i64),
     Regex(String, String),
@@ -158,7 +158,7 @@ fn get_number(vec: Vec<char>) -> i64 {
     buffer
 }
 
-pub(crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
+pub fn lex(buf: &str) -> Result<Vec<Token>, String> {
     let tokens = full_lex(buf)?;
 
     Ok(tokens
@@ -167,7 +167,7 @@ pub(crate) fn lex(buf: &str) -> Result<Vec<Token>, String> {
         .collect::<Vec<Token>>())
 }
 
-pub(crate) fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
+pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut it = buf.chars().peekable();
 
