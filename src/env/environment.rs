@@ -7,7 +7,7 @@ use crate::ops::RangeCap;
 pub struct Environment<'a> {
     pub lineno: i64,
     pub line: String,
-    pub func_reg: FunctionRegistry,
+    pub(crate) func_reg: FunctionRegistry,
     scope_stack: Vec<Scope>,
     pub out: &'a mut dyn Write,
     pub(crate) tracker: RangeScopeTracker,
