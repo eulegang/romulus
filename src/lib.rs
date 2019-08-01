@@ -7,7 +7,7 @@ pub mod lex;
 pub mod env;
 mod func;
 mod ops;
-mod nodes;
+pub mod node;
 
 use env::Environment;
 use ops::Operation;
@@ -16,13 +16,13 @@ use std::path::Path;
 use std::fs::File;
 
 pub struct Interpreter {
-    node: nodes::Node,
+    node: node::Seq,
 }
 
 impl Interpreter {
     pub fn new<S: AsRef<str>>(buf: S) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
-        let node = nodes::parse(tokens)?;
+        let node = node::parse(tokens)?;
 
         Ok(Interpreter { node })
     }

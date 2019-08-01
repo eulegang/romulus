@@ -1,7 +1,7 @@
 use crate::func::{FunctionRegistry, Value};
 use std::io::Write;
 use super::{Scope, RangeScopeTracker};
-use crate::nodes::Node;
+use crate::node::Seq;
 use crate::ops::RangeCap;
 
 pub struct Environment<'a> {
@@ -14,7 +14,7 @@ pub struct Environment<'a> {
 }
 
 impl<'a> Environment<'a> {
-    pub fn new<W: Write>(w: &'a mut W, node: &Node) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, node: &Seq) -> Environment<'a> {
         Environment {
             lineno: 0,
             line: String::new(),

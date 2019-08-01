@@ -1,18 +1,18 @@
 use super::*;
 use crate::func::Value;
 use regex::{Captures, Regex};
-use crate::nodes::*;
+use crate::node::*;
 
 pub trait Valuable {
     fn to_value(&self, env: &Environment) -> Value;
 }
 
-impl Valuable for ExpressionNode {
+impl Valuable for Expression {
     fn to_value(&self, env: &Environment) -> Value {
         match self {
-            ExpressionNode::Literal(lit) => lit.to_value(env),
+            Expression::Literal(lit) => lit.to_value(env),
 
-            ExpressionNode::Identifier(name) => {
+            Expression::Identifier(name) => {
                 if let Some(value) = env.lookup(name) {
                     Value::String(value.clone())
                 } else {
@@ -23,11 +23,11 @@ impl Valuable for ExpressionNode {
     }
 }
 
-impl Valuable for LiteralNode {
+impl Valuable for Literal {
     fn to_value(&self, env: &Environment) -> Value {
         match self {
-            LiteralNode::Regex(regex) => Value::Regex(regex.clone()),
-            LiteralNode::String(s, interpolate) => {
+            Literal::Regex(regex) => Value::Regex(regex.clone()),
+            Literal::String(s, interpolate) => {
                 lazy_static! {
                     static ref INTERPOLATOR: Regex =
                         Regex::new(r"\$\{(?P<name>[a-zA-Z0-9_]+)\}").unwrap();
