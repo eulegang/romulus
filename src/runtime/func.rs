@@ -2,7 +2,7 @@ use crate::runtime::Environment;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::io::Write;
+use super::func_impl;
 
 pub enum Value {
     String(String),
@@ -32,7 +32,7 @@ impl Default for FunctionRegistry {
     fn default() -> FunctionRegistry {
         let mut funcs = HashMap::new();
 
-        funcs.insert(String::from("print"), Func { proc: print_impl });
+        funcs.insert(String::from("print"), Func { proc: func_impl::print });
 
         FunctionRegistry { funcs }
     }
@@ -40,16 +40,4 @@ impl Default for FunctionRegistry {
 
 pub struct Func {
     pub(crate) proc: fn(&mut Environment, args: &[Value]),
-}
-
-fn print_impl(env: &mut Environment, args: &[Value]) {
-    if args.is_empty() {
-        let _ = write!(env.out, "{}", &env.line);
-    } else {
-        for arg in args {
-            let _ = write!(env, "{}", arg);
-        }
-    }
-
-    let _ = writeln!(env);
 }

@@ -2,6 +2,7 @@ mod scope;
 mod environment;
 mod range_scope_tracker;
 mod func;
+mod func_impl;
 
 pub use scope::Scope;
 pub use environment::Environment;
