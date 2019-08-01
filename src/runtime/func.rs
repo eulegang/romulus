@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use super::func_impl;
 
+/// A value used at runtime
 pub enum Value {
     String(String),
     Regex(Box<Regex>),
@@ -18,15 +19,22 @@ impl Display for Value {
     }
 }
 
+/// A registry containing function implemenations
 pub struct FunctionRegistry {
     funcs: HashMap<String, Func>,
 }
 
 impl FunctionRegistry {
+    /// get a function from the registry
     pub fn get(&self, key: &str) -> Option<&Func> {
         self.funcs.get(key)
     }
 
+    /// add a function to the registry
+    /// 
+    /// functions may not be overriden in the registry
+    /// if a name is already registred this method will
+    /// return `false`
     pub fn put(&mut self, key: &str, func: Func) -> bool {
         if self.funcs.get(key).is_some() {
             false
@@ -47,6 +55,7 @@ impl Default for FunctionRegistry {
     }
 }
 
+/// A wrapper for function implementations
 pub struct Func {
     pub proc: fn(env: &mut Environment, args: &[Value]),
 }

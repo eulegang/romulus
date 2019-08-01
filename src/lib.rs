@@ -14,12 +14,15 @@ use std::io::{BufRead, Write, Read};
 use std::path::Path;
 use std::fs::File;
 
+/// The interpreter which processes lines with a romulus program
 pub struct Interpreter {
     node: node::Seq,
     reg: FunctionRegistry,
 }
 
 impl Interpreter {
+    /// Creates a new interpret with a string romulus program
+    /// and a FunctionRegistry
     pub fn new<S: AsRef<str>>(buf: S, reg: FunctionRegistry) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
         let node = node::parse(tokens)?;
@@ -27,6 +30,8 @@ impl Interpreter {
         Ok(Interpreter { node, reg })
     }
 
+    /// Creates a new interpret with a the contents of a file
+    /// and a FunctionRegistry
     pub fn file<P: AsRef<Path>>(file: P, reg: FunctionRegistry) -> Result<Interpreter, String> {
         let mut file = match File::open(file.as_ref()) {
             Ok(f) => f,
@@ -41,6 +46,8 @@ impl Interpreter {
         Interpreter::new(&buf, reg)
     }
 
+    /// Process an input stream and writes the results for it's romulus program to 
+    /// the output stream
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
         let mut iter = sin.lines();
         let mut env = Environment::new(sout, &self.node, &self.reg);

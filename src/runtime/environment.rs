@@ -3,16 +3,24 @@ use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
 use crate::node::Seq;
 use crate::ops::RangeCap;
 
+/// Embodies the current state of the program
+///
 pub struct Environment<'a> {
+    /// The current line number being processed
     pub lineno: i64,
+
+    /// The current line being processed
     pub line: String,
     pub(crate) reg: &'a FunctionRegistry,
     scope_stack: Vec<Scope>,
+
+    /// Where prints should write
     pub out: &'a mut dyn Write,
     pub(crate) tracker: RangeScopeTracker,
 }
 
 impl<'a> Environment<'a> {
+    /// Creates a new environment
     pub fn new<W: Write>(w: &'a mut W, node: &Seq, reg: &'a FunctionRegistry) -> Environment<'a> {
         Environment {
             lineno: 0,
@@ -26,6 +34,7 @@ impl<'a> Environment<'a> {
 }
 
 impl<'a> Environment<'a> {
+    /// Looks up a variable from the stack of scopes
     pub fn lookup(&self, key: &str) -> Option<String> {
         for scope in self.scope_stack.iter().rev() {
             if let Some(value) = scope.get(key) {
