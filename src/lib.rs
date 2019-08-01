@@ -1,3 +1,19 @@
+//! Romulus is a text processing language similar to sed
+//!
+//! Here is an example program which process the output of ifconfig
+//! ```
+//! /^(?P<inter>[a-zA-Z0-9]+): /,/^[a-zA-Z0-9]+:/ {
+//!	  /inet (?P<ip>[0-9]{1,3}(\.[0-9]{1,3}){3})/ {
+//!     print("${inter}: ${ip}")
+//!	  }
+//!
+//!	  /inet6 (?P<ip>[a-fA-F0-9]{0,4}(:[a-fA-F0-9]{0,4}){0,8})/ {
+//!     print("${inter}: ${ip}")
+//!	  }
+//! }
+//! ```
+//!
+
 #![allow(clippy::new_without_default)]
 
 #[macro_use]
