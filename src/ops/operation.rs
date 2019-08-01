@@ -1,5 +1,5 @@
 use super::*;
-use crate::func::Value;
+use crate::runtime::Value;
 use crate::node;
 
 pub trait Operation {

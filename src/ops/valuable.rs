@@ -1,7 +1,7 @@
 use super::*;
-use crate::func::Value;
 use regex::{Captures, Regex};
 use crate::node::*;
+use crate::runtime::Value;
 
 pub trait Valuable {
     fn to_value(&self, env: &Environment) -> Value;

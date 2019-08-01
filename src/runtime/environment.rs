@@ -1,6 +1,5 @@
-use crate::func::{FunctionRegistry, Value};
 use std::io::Write;
-use super::{Scope, RangeScopeTracker};
+use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
 use crate::node::Seq;
 use crate::ops::RangeCap;
 

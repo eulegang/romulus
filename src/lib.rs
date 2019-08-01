@@ -5,7 +5,6 @@ extern crate lazy_static;
 
 pub mod lex;
 pub mod runtime;
-mod func;
 mod ops;
 pub mod node;
 
