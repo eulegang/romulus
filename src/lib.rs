@@ -6,7 +6,7 @@ extern crate lazy_static;
 pub mod lex;
 pub mod runtime;
 mod ops;
-pub mod node;
+pub mod ast;
 
 use runtime::{Environment, FunctionRegistry};
 use ops::Operation;
@@ -16,7 +16,7 @@ use std::fs::File;
 
 /// The interpreter which processes lines with a romulus program
 pub struct Interpreter {
-    node: node::Seq,
+    node: ast::Seq,
     reg: FunctionRegistry,
 }
 
@@ -25,7 +25,7 @@ impl Interpreter {
     /// and a FunctionRegistry
     pub fn new<S: AsRef<str>>(buf: S, reg: FunctionRegistry) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
-        let node = node::parse(tokens)?;
+        let node = ast::parse(tokens)?;
 
         Ok(Interpreter { node, reg })
     }

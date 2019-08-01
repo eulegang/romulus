@@ -1,20 +1,20 @@
 use super::*;
-use crate::node;
+use crate::ast;
 
 pub trait ScopeProvider {
     fn scope(&self, env: &Environment) -> Scope;
 }
 
-impl ScopeProvider for node::Selector {
+impl ScopeProvider for ast::Selector {
     fn scope(&self, env: &Environment) -> Scope {
         match self {
-            node::Selector::Match(match_node) => match_node.scope(env),
-            node::Selector::Range(range_node) => range_node.scope(env),
+            ast::Selector::Match(match_node) => match_node.scope(env),
+            ast::Selector::Range(range_node) => range_node.scope(env),
         }
     }
 }
 
-impl ScopeProvider for node::Range {
+impl ScopeProvider for ast::Range {
     fn scope(&self, env: &Environment) -> Scope {
         if let Some(scope) = env.tracker.get() {
             scope.clone()
@@ -24,13 +24,13 @@ impl ScopeProvider for node::Range {
     }
 }
 
-impl ScopeProvider for node::Match {
+impl ScopeProvider for ast::Match {
     fn scope(&self, env: &Environment) -> Scope {
         let mut scope = Scope::new();
 
         match self {
-            node::Match::Index(_) => (),
-            node::Match::Regex(rgx) => {
+            ast::Match::Index(_) => (),
+            ast::Match::Regex(rgx) => {
                 if let Some(capture) = rgx.captures(&env.line) {
                     for name in rgx.capture_names() {
                         if let Some(n) = name {

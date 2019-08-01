@@ -1,12 +1,12 @@
 use super::*;
 use crate::runtime::Value;
-use crate::node;
+use crate::ast;
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
 }
 
-impl Operation for node::Seq {
+impl Operation for ast::Seq {
     fn perform(&self, env: &mut Environment) {
         for sub in &self.subnodes {
             sub.perform(env)
@@ -14,11 +14,11 @@ impl Operation for node::Seq {
     }
 }
 
-impl Operation for node::Body {
+impl Operation for ast::Body {
     fn perform(&self, env: &mut Environment) {
         match self {
-            node::Body::Bare(func_node) => func_node.perform(env),
-            node::Body::Guard(sel_node, node) => {
+            ast::Body::Bare(func_node) => func_node.perform(env),
+            ast::Body::Guard(sel_node, node) => {
                 if sel_node.select(env) {
                     env.push(sel_node.scope(env));
                     node.perform(env);
@@ -29,7 +29,7 @@ impl Operation for node::Body {
     }
 }
 
-impl Operation for node::Function {
+impl Operation for ast::Function {
     fn perform(&self, env: &mut Environment) {
         let values: Vec<Value> = self
             .args

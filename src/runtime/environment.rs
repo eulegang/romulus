@@ -1,6 +1,6 @@
 use std::io::Write;
 use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
-use crate::node::Seq;
+use crate::ast::Seq;
 use crate::ops::RangeCap;
 
 /// Embodies the current state of the program

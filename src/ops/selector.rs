@@ -1,22 +1,22 @@
 use super::*;
-use crate::node;
+use crate::ast;
 
 pub trait Selector {
     fn select(&self, env: &mut Environment) -> bool;
 }
 
-impl Selector for node::Selector {
+impl Selector for ast::Selector {
     fn select(&self, env: &mut Environment) -> bool {
         match self {
-            node::Selector::Match(match_node) => match_node.select(env),
-            node::Selector::Range(range_node) => range_node.select(env),
+            ast::Selector::Match(match_node) => match_node.select(env),
+            ast::Selector::Range(range_node) => range_node.select(env),
         }
     }
 }
 
-impl Selector for node::Range {
+impl Selector for ast::Range {
     fn select(&self, env: &mut Environment) -> bool {
-        let node::Range(start, end) = self;
+        let ast::Range(start, end) = self;
 
         if !env.tracker.in_range() {
             if start.select(env) {
@@ -36,11 +36,11 @@ impl Selector for node::Range {
     }
 }
 
-impl Selector for node::Match {
+impl Selector for ast::Match {
     fn select(&self, env: &mut Environment) -> bool {
         match self {
-            node::Match::Index(idx) => env.lineno == *idx,
-            node::Match::Regex(rgx) => rgx.is_match(&env.line),
+            ast::Match::Index(idx) => env.lineno == *idx,
+            ast::Match::Regex(rgx) => rgx.is_match(&env.line),
         }
     }
 }

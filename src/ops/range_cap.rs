@@ -1,4 +1,4 @@
-use crate::node;
+use crate::ast;
 
 //
 // Specifies how many ranges need to be kept track of
@@ -7,7 +7,7 @@ pub trait RangeCap {
     fn num_ranges(&self) -> usize;
 }
 
-impl RangeCap for node::Seq {
+impl RangeCap for ast::Seq {
     fn num_ranges(&self) -> usize {
         let mut count = 0;
         for sub in &self.subnodes {
@@ -18,20 +18,20 @@ impl RangeCap for node::Seq {
     }
 }
 
-impl RangeCap for node::Body {
+impl RangeCap for ast::Body {
     fn num_ranges(&self) -> usize {
         match self {
-            node::Body::Bare(_) => 0,
-            node::Body::Guard(sel, node) => sel.num_ranges() + node.num_ranges(),
+            ast::Body::Bare(_) => 0,
+            ast::Body::Guard(sel, node) => sel.num_ranges() + node.num_ranges(),
         }
     }
 }
 
-impl RangeCap for node::Selector {
+impl RangeCap for ast::Selector {
     fn num_ranges(&self) -> usize {
         match self {
-            node::Selector::Match(_) => 0,
-            node::Selector::Range(_) => 1,
+            ast::Selector::Match(_) => 0,
+            ast::Selector::Range(_) => 1,
         }
     }
 }
