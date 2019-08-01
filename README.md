@@ -5,6 +5,11 @@
 
 A mondern alternative to sed
 
+## Versions
+
+Currently while under development I will only be bumping patch versions rather then the normal minor versions 
+until I feel like as if romulus is a somewhat mature release and ready for v1
+
 ## Sample
 
 given a executable file parse\_ifconfig such as
