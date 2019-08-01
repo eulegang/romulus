@@ -4,12 +4,12 @@
 extern crate lazy_static;
 
 pub mod lex;
-pub mod env;
+pub mod runtime;
 mod func;
 mod ops;
 pub mod node;
 
-use env::Environment;
+use runtime::Environment;
 use ops::Operation;
 use std::io::{BufRead, Write, Read};
 use std::path::Path;
