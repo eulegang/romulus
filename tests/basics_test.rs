@@ -1,10 +1,11 @@
 extern crate romulus;
 
 use romulus::Interpreter;
+use romulus::runtime::FunctionRegistry;
 
 macro_rules! run_interpreter {
     ($prog: expr, $input: expr) => {{
-        let interpreter = Interpreter::new($prog).unwrap();
+        let interpreter = Interpreter::new($prog, FunctionRegistry::default()).unwrap();
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
 

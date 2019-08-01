@@ -6,18 +6,18 @@ use crate::ops::RangeCap;
 pub struct Environment<'a> {
     pub lineno: i64,
     pub line: String,
-    pub(crate) func_reg: FunctionRegistry,
+    pub(crate) reg: &'a FunctionRegistry,
     scope_stack: Vec<Scope>,
     pub out: &'a mut dyn Write,
     pub(crate) tracker: RangeScopeTracker,
 }
 
 impl<'a> Environment<'a> {
-    pub fn new<W: Write>(w: &'a mut W, node: &Seq) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, node: &Seq, reg: &'a FunctionRegistry) -> Environment<'a> {
         Environment {
             lineno: 0,
             line: String::new(),
-            func_reg: FunctionRegistry::default(),
+            reg,
             scope_stack: Vec::new(),
             out: w,
             tracker: RangeScopeTracker::new(node.num_ranges()),
@@ -45,7 +45,7 @@ impl<'a> Environment<'a> {
     }
 
     pub(crate) fn call(&mut self, name: String, args: Vec<Value>) {
-        let func = match self.func_reg.get(&name) {
+        let func = match self.reg.get(&name) {
             Some(f) => f,
             None => panic!(format!("expected {} to be defined", name)),
         };

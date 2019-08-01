@@ -26,6 +26,15 @@ impl FunctionRegistry {
     pub fn get(&self, key: &str) -> Option<&Func> {
         self.funcs.get(key)
     }
+
+    pub fn put(&mut self, key: &str, func: Func) -> bool {
+        if self.funcs.get(key).is_some() {
+            false
+        } else {
+            self.funcs.insert(key.to_string(), func);
+            true
+        }
+    }
 }
 
 impl Default for FunctionRegistry {

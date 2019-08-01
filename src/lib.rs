@@ -8,7 +8,7 @@ pub mod runtime;
 mod ops;
 pub mod node;
 
-use runtime::Environment;
+use runtime::{Environment, FunctionRegistry};
 use ops::Operation;
 use std::io::{BufRead, Write, Read};
 use std::path::Path;
@@ -16,17 +16,18 @@ use std::fs::File;
 
 pub struct Interpreter {
     node: node::Seq,
+    reg: FunctionRegistry,
 }
 
 impl Interpreter {
-    pub fn new<S: AsRef<str>>(buf: S) -> Result<Interpreter, String> {
+    pub fn new<S: AsRef<str>>(buf: S, reg: FunctionRegistry) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
         let node = node::parse(tokens)?;
 
-        Ok(Interpreter { node })
+        Ok(Interpreter { node, reg })
     }
 
-    pub fn file<P: AsRef<Path>>(file: P) -> Result<Interpreter, String> {
+    pub fn file<P: AsRef<Path>>(file: P, reg: FunctionRegistry) -> Result<Interpreter, String> {
         let mut file = match File::open(file.as_ref()) {
             Ok(f) => f,
             Err(err) => return Err(format!("unable to open file romulus file: {}", err)),
@@ -37,12 +38,12 @@ impl Interpreter {
             return Err(format!("unable to read romulus file: {}", err))
         }
 
-        Interpreter::new(&buf)
+        Interpreter::new(&buf, reg)
     }
 
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
         let mut iter = sin.lines();
-        let mut env = Environment::new(sout, &self.node);
+        let mut env = Environment::new(sout, &self.node, &self.reg);
 
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;

@@ -9,4 +9,3 @@ pub use environment::Environment;
 pub use func::{Value, FunctionRegistry, Func};
 pub(crate) use range_scope_tracker::RangeScopeTracker;
 
-
