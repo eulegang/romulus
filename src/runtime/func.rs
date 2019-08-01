@@ -39,5 +39,5 @@ impl Default for FunctionRegistry {
 }
 
 pub struct Func {
-    pub(crate) proc: fn(&mut Environment, args: &[Value]),
+    pub proc: fn(env: &mut Environment, args: &[Value]),
 }
