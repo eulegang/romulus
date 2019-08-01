@@ -1,3 +1,5 @@
+//! A module which extracts romulus tokens out of string content
+
 use std::iter::Peekable;
 use std::ops::RangeInclusive;
 

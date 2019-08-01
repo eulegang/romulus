@@ -1,3 +1,5 @@
+//! A module organizing the runtime elements of a romulus program
+
 mod scope;
 mod environment;
 mod range_scope_tracker;

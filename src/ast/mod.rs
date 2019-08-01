@@ -1,3 +1,5 @@
+//! A module organizing the romulus abstract syntax tree
+
 use regex::Regex;
 
 mod parse;
