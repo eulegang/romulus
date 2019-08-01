@@ -1,6 +1,8 @@
 use crate::lex::Token;
 use super::*;
 
+/// Parses a romulus token stream and creates a romulus AST,
+/// or returns an error message
 pub fn parse(tokens: Vec<Token>) -> Result<Seq, String> {
     let (node, offset) = Seq::parse(&tokens, 0)?;
 
