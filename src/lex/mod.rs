@@ -1,15 +1,51 @@
 use std::iter::Peekable;
 use std::ops::RangeInclusive;
 
+///
+/// Represents the individual grammer entity in romulus
+///
 #[derive(Debug, PartialEq)]
 pub enum Token {
+
+    /// Represents (, {, [, ], }, )
     Paren(char),
+
+    /// Represents positive decimal numbers <br>
+    /// such as `42`
     Number(i64),
+
+    /// Represents a Regular Expression with flags in the form of /regex/flags <br>
+    /// such as `/[a-z]+/i`
+    /// 
+    /// flags supported
+    /// 1. `i` - case insensitive
+    /// 2. `U` - swap greediness semantics
     Regex(String, String),
+
+    /// Represents a comment
+    ///
+    /// Currently only line comments are supported <br>
+    /// any characters after `#` are apart of a comment
     Comment(String),
+
+    /// Represents a variable identifier
+    ///
+    /// any bare caracters that match `/[_a-z][_a-z0-9]*/i` <br>
+    /// i.e. _the_answer_42
     Identifier(String),
+
+    /// Represents a string
+    ///
+    /// single quotes may not interpolate variables, where as double qoutes
+    /// may interpolate variables with a `${identifier}`
+    ///
+    /// such as `'some string'`, `"Ip Address: ${ip}"`
     String(String, bool),
+
+    /// A newline character, carriage returen, or semicolon
     Newline,
+
+    /// A comma
     Comma,
 }
 
@@ -158,6 +194,11 @@ fn get_number(vec: Vec<char>) -> i64 {
     buffer
 }
 
+/// Lexes a given string and returns only significant tokens in
+/// a romulus program
+///
+/// for example newlines and comments are not significant for parsing
+/// a romulus program
 pub fn lex(buf: &str) -> Result<Vec<Token>, String> {
     let tokens = full_lex(buf)?;
 
@@ -167,6 +208,8 @@ pub fn lex(buf: &str) -> Result<Vec<Token>, String> {
         .collect::<Vec<Token>>())
 }
 
+
+/// Lexes a given string and returns all tokens found
 pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut it = buf.chars().peekable();
