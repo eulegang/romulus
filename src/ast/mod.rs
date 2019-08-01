@@ -23,7 +23,7 @@ pub enum Literal {
 ///
 /// Here is the basic form
 ///
-/// ```
+/// ```text
 /// <match condition> {
 ///   <actions>
 /// }
@@ -33,7 +33,7 @@ pub enum Literal {
 pub enum Match {
     /// The case to run a statements when a line number is reached
     /// 
-    /// ```
+    /// ```text
     /// 1 {
     ///   print("Begin of input")
     /// }
@@ -42,7 +42,7 @@ pub enum Match {
 
     /// The case to run statements when a line matches a regex
     ///
-    /// ```
+    /// ```text
     /// /(?P<type>struct|enum) +(?P<name>[_a-z0-9]+)/ {
     ///     print("${name} is a ${type}")
     /// }
@@ -65,7 +65,7 @@ pub enum Match {
 /// When a start match is a regex and has capture variables it's variables are stored and 
 /// supplied for each next until the range ends
 ///
-/// ```
+/// ```text
 /// /start: (?P<type>.*)/, /end/{
 ///   /elem: (?P<elem>.*)/ {
 ///     print("${type}: ${elem}")
@@ -81,7 +81,7 @@ pub struct Range(pub Match, pub Match);
 pub enum Selector {
     /// A match is given
     ///
-    /// ```
+    /// ```text
     /// 1 {
     ///   print("round one, fight!")
     /// }
@@ -89,7 +89,7 @@ pub enum Selector {
     Match(Match),
 
     /// A range is given
-    /// ```
+    /// ```text
     /// /BEGIN/,/END/ {
     ///   print() # would print initial BEGIN line
     /// }

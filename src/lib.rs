@@ -1,7 +1,7 @@
 //! Romulus is a text processing language similar to sed
 //!
 //! Here is an example program which process the output of ifconfig
-//! ```
+//! ```text
 //! /^(?P<inter>[a-zA-Z0-9]+): /,/^[a-zA-Z0-9]+:/ {
 //!	  /inet (?P<ip>[0-9]{1,3}(\.[0-9]{1,3}){3})/ {
 //!     print("${inter}: ${ip}")
