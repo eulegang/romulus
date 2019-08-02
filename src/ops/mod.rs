@@ -1,4 +1,4 @@
-use crate::runtime::{Environment, Scope};
+use crate::runtime::{Environment, Scope, Event};
 
 mod operation;
 mod range_cap;

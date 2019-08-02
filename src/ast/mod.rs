@@ -31,6 +31,25 @@ pub enum Literal {
 ///
 #[derive(Debug)]
 pub enum Match {
+
+    /// The case where the first line should be matched
+    ///
+    /// ```text
+    /// ^ {
+    ///   print("start!")
+    /// }
+    /// ```
+    Begin,
+
+    /// The case where the last line should be matched
+    ///
+    /// ```text
+    /// $ {
+    ///   print("end!")
+    /// }
+    /// ```
+    End,
+
     /// The case to run a statements when a line number is reached
     /// 
     /// ```text

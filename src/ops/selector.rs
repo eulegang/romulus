@@ -39,8 +39,16 @@ impl Selector for ast::Range {
 impl Selector for ast::Match {
     fn select(&self, env: &mut Environment) -> bool {
         match self {
+            ast::Match::Begin => env.event == Event::Begin,
+            ast::Match::End => env.event == Event::End,
             ast::Match::Index(idx) => env.lineno == *idx,
-            ast::Match::Regex(rgx) => rgx.is_match(&env.line),
+            ast::Match::Regex(rgx) => {
+                if let Event::Line(line) = &env.event {
+                    rgx.is_match(line)
+                } else {
+                    false
+                }
+            }
         }
     }
 }

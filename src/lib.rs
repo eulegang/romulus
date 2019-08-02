@@ -24,7 +24,7 @@ pub mod runtime;
 mod ops;
 pub mod ast;
 
-use runtime::{Environment, FunctionRegistry};
+use runtime::{Environment, FunctionRegistry, Event};
 use ops::Operation;
 use std::io::{BufRead, Write, Read};
 use std::path::Path;
@@ -68,13 +68,21 @@ impl Interpreter {
         let mut iter = sin.lines();
         let mut env = Environment::new(sout, &self.node, &self.reg);
 
+        env.event = Event::Begin;
+        self.node.perform(&mut env);
+        env.tracker.reset();
+
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;
-            env.line = line;
+            env.event = Event::Line(line.to_string());
 
             self.node.perform(&mut env);
             env.tracker.reset();
         }
+
+        env.event = Event::End;
+        self.node.perform(&mut env);
+        env.tracker.reset();
     }
 }
 

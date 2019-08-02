@@ -46,3 +46,23 @@ fn capture() {
         "name,type\nHaunter,Ghost\nNoctowl,Flying\n"
     )
 }
+
+#[test]
+fn symbolic_anchors() {
+    assert_eq!(
+        run_interpreter!(
+            "^ { print('first') }; // { print() }; $ { print('last') }",
+            "middle"
+        ),
+        "first\nmiddle\nlast\n".to_string()
+    );
+
+    assert_eq!(
+        run_interpreter!(
+            "^ { print('first') }; // { print() }; $ { print('last') }",
+            ""
+        ),
+        "first\nlast\n".to_string()
+    );
+}
+

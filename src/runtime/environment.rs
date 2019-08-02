@@ -3,14 +3,28 @@ use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
 use crate::ast::Seq;
 use crate::ops::RangeCap;
 
+/// An event to be processed
+#[derive(PartialEq)]
+pub enum Event {
+    /// The beginning of processing
+    Begin,
+
+    /// A line to be processed
+    Line(String),
+
+    /// The end of processing
+    End
+}
+
 /// Embodies the current state of the program
 ///
 pub struct Environment<'a> {
     /// The current line number being processed
     pub lineno: i64,
 
-    /// The current line being processed
-    pub line: String,
+    /// Current event being handled
+    pub event: Event,
+
     pub(crate) reg: &'a FunctionRegistry,
     scope_stack: Vec<Scope>,
 
@@ -24,7 +38,7 @@ impl<'a> Environment<'a> {
     pub fn new<W: Write>(w: &'a mut W, node: &Seq, reg: &'a FunctionRegistry) -> Environment<'a> {
         Environment {
             lineno: 0,
-            line: String::new(),
+            event: Event::Begin,
             reg,
             scope_stack: Vec::new(),
             out: w,

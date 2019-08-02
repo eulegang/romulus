@@ -107,6 +107,8 @@ impl Parsable for Match {
                 let regex = to_regex(pattern.to_string(), flags.to_string())?;
                 Ok((Match::Regex(regex), pos + 1))
             }
+            Token::Symbol('^') => Ok((Match::Begin, pos + 1)),
+            Token::Symbol('$') => Ok((Match::End, pos + 1)),
 
             _ => Err(format!(
                     "expected a regex or a number but received {:?}",

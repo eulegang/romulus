@@ -29,13 +29,17 @@ impl ScopeProvider for ast::Match {
         let mut scope = Scope::new();
 
         match self {
+            ast::Match::Begin => (),
+            ast::Match::End => (),
             ast::Match::Index(_) => (),
             ast::Match::Regex(rgx) => {
-                if let Some(capture) = rgx.captures(&env.line) {
-                    for name in rgx.capture_names() {
-                        if let Some(n) = name {
-                            if let Some(m) = capture.name(n) {
-                                scope.set(n.to_string(), m.as_str().to_string())
+                if let Event::Line(line) = &env.event {
+                    if let Some(capture) = rgx.captures(&line) {
+                        for name in rgx.capture_names() {
+                            if let Some(n) = name {
+                                if let Some(m) = capture.name(n) {
+                                    scope.set(n.to_string(), m.as_str().to_string())
+                                }
                             }
                         }
                     }

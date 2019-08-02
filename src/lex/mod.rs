@@ -12,6 +12,9 @@ pub enum Token {
     /// Represents (, {, [, ], }, )
     Paren(char),
 
+    /// Represents simple symbols like ^ and $
+    Symbol(char),
+
     /// Represents positive decimal numbers <br>
     /// such as `42`
     Number(i64),
@@ -63,6 +66,7 @@ impl Token {
             Token::String(_, _) => "string".to_string(),
             Token::Newline => "newline".to_string(),
             Token::Comma => "comma".to_string(),
+            Token::Symbol(_) => "symbol".to_string(),
         }
     }
 
@@ -74,6 +78,7 @@ impl Token {
             Token::Comment(_) => false,
             Token::Identifier(_) => true,
             Token::String(_, _) => true,
+            Token::Symbol(_) => true,
             Token::Newline => false,
             Token::Comma => true,
         }
@@ -285,6 +290,11 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                 let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::Identifier(content));
+            }
+
+            '^' | '$' => {
+                tokens.push(Token::Symbol(*ch));
+                it.next();
             }
 
             a => {
