@@ -34,15 +34,15 @@ impl Valuable for Literal {
                 }
 
                 if *interpolate {
-                    Value::String(
-                        INTERPOLATOR
-                            .replace_all(s, |capture: &Captures| -> String {
-                                let key = String::from(&capture["name"]);
-                                env.lookup(&key).unwrap_or_default()
-                            })
-                            .to_owned()
-                            .to_string(),
-                    )
+                    let intermediary = s.replace("\\$", "\0");
+                    let eval = |capture: &Captures| -> String {
+                        let key = String::from(&capture["name"]);
+                        env.lookup(&key).unwrap_or_default()
+                    };
+
+                    let evaled = INTERPOLATOR.replace_all(&intermediary, eval).to_owned().to_string();
+
+                    Value::String(evaled.replace('\0', "$"))
                 } else {
                     Value::String(s.clone())
                 }

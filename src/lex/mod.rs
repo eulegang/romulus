@@ -154,13 +154,25 @@ fn chomp_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) 
 }
 
 #[inline]
-fn chomp_until<T: Iterator<Item = char>>(iter: &mut Peekable<T>, terminator: char) -> Vec<char> {
+fn chomp_until_escaped<T: Iterator<Item = char>>(iter: &mut Peekable<T>, terminator: char, evaluates: bool) -> Result<Vec<char>, String> {
     let mut accepted: Vec<char> = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
         let owned: char = **ch;
 
-        if owned != terminator {
+        if owned == '\\' {
+            iter.next();
+            match iter.next() {
+                Some('n') => accepted.push('\n'),
+                Some('\\') => accepted.push('\\'),
+                Some('t') => accepted.push('\t'),
+                Some('r') => accepted.push('\r'),
+                Some('$') if evaluates => { accepted.push('\\'); accepted.push('$') }
+                Some(escaped) if escaped == terminator => accepted.push(escaped),
+                Some(escaped) => return Err(format!("cannot escape {}", escaped)),
+                None => return Err(format!("found EOF when searching for {}", &terminator)),
+            }
+        } else if owned != terminator {
             accepted.push(owned);
             iter.next();
         } else {
@@ -168,7 +180,7 @@ fn chomp_until<T: Iterator<Item = char>>(iter: &mut Peekable<T>, terminator: cha
         }
     }
 
-    accepted
+    Ok(accepted)
 }
 
 #[inline]
@@ -255,7 +267,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '/' => {
                 it.next();
-                let chars = chomp_until(&mut it, '/');
+                let chars = chomp_until_escaped(&mut it, '/', false)?;
                 let pattern = chars.iter().cloned().collect::<String>();
                 if Some('/') != it.next() {
                     return Err("expected character: '/'".to_string());
@@ -269,7 +281,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '"' => {
                 it.next();
-                let chars = chomp_until(&mut it, '"');
+                let chars = chomp_until_escaped(&mut it, '"', true)?;
                 it.next();
                 let content = chars.iter().cloned().collect::<String>();
 
@@ -278,7 +290,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '\'' => {
                 it.next();
-                let chars = chomp_until(&mut it, '\'');
+                let chars = chomp_until_escaped(&mut it, '\'', false)?;
                 it.next();
                 let content = chars.iter().cloned().collect::<String>();
 
@@ -381,5 +393,12 @@ mod tests {
         ];
 
         assert_eq!(lex("42 #some comment\n  /test */i"), Ok(tokens));
+    }
+
+    #[test]
+    fn escape() {
+        let tokens = vec![Token::String("\\\n\"".to_string(), true)];
+
+        assert_eq!(lex("\"\\\\\\n\\\"\""),  Ok(tokens))
     }
 }
