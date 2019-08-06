@@ -32,6 +32,7 @@ impl RangeCap for ast::Selector {
         match self {
             ast::Selector::Match(_) => 0,
             ast::Selector::Range(_) => 1,
+            ast::Selector::Pattern(_) => 0,
         }
     }
 }

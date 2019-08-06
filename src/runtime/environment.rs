@@ -1,5 +1,6 @@
 use std::io::Write;
 use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
+use regex::Regex;
 use crate::ast::Seq;
 use crate::ops::RangeCap;
 
@@ -28,6 +29,8 @@ pub struct Environment<'a> {
     pub(crate) reg: &'a FunctionRegistry,
     scope_stack: Vec<Scope>,
 
+    pub(crate) seperator: Regex,
+
     /// Where prints should write
     pub out: &'a mut dyn Write,
     pub(crate) tracker: RangeScopeTracker,
@@ -35,12 +38,13 @@ pub struct Environment<'a> {
 
 impl<'a> Environment<'a> {
     /// Creates a new environment
-    pub fn new<W: Write>(w: &'a mut W, node: &Seq, reg: &'a FunctionRegistry) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, node: &Seq, seperator: Regex, reg: &'a FunctionRegistry) -> Environment<'a> {
         Environment {
             lineno: 0,
             event: Event::Begin,
             reg,
             scope_stack: Vec::new(),
+            seperator,
             out: w,
             tracker: RangeScopeTracker::new(node.num_ranges()),
         }

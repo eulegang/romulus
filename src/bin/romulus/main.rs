@@ -6,6 +6,8 @@ extern crate tempfile;
 
 extern crate romulus;
 
+extern crate regex;
+
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
@@ -13,6 +15,7 @@ use std::process;
 use romulus::Interpreter;
 use romulus::runtime::FunctionRegistry;
 use std::fmt::Display;
+use regex::Regex;
 
 fn main() {
     let matches = App::new("romulus")
@@ -47,6 +50,15 @@ fn main() {
                 .requires("inputs")
                 .help("inplace replacement backup extension")
         )
+        .arg(
+            Arg::with_name("sep")
+                .short("s")
+                .long("sep")
+                .env("RSEP")
+                .takes_value(true)
+                .default_value(" +")
+                .help("sepeartes patterns in a line")
+        )
         .group(
             ArgGroup::with_name("program")
                 .args(&["file", "expr"])
@@ -68,12 +80,20 @@ fn main() {
 }
 
 fn create_interpreter(matches: &ArgMatches) -> Interpreter {
+    let sep = match Regex::new(matches.value_of("sep").unwrap()) {
+        Ok(regex) => regex,
+        Err(msg) => {
+            eprintln!("Error parsing sep: {}", msg);
+            process::exit(1);
+        }
+    };
+
     if let Some(expr) = matches.value_of("expr") {
-        return ok_or_exit(Interpreter::new(expr, FunctionRegistry::default()));
+        return ok_or_exit(Interpreter::new(expr, sep, FunctionRegistry::default()));
     }
 
     if let Some(filename) = matches.value_of("file") {
-        return ok_or_exit(Interpreter::file(filename, FunctionRegistry::default()))
+        return ok_or_exit(Interpreter::file(filename, sep, FunctionRegistry::default()))
     }
 
     unreachable!()

@@ -1,5 +1,6 @@
 use super::*;
 use crate::ast;
+use crate::runtime::Value;
 
 pub trait Selector {
     fn select(&self, env: &mut Environment) -> bool;
@@ -10,6 +11,7 @@ impl Selector for ast::Selector {
         match self {
             ast::Selector::Match(match_node) => match_node.select(env),
             ast::Selector::Range(range_node) => range_node.select(env),
+            ast::Selector::Pattern(pattern_node) => pattern_node.select(env),
         }
     }
 }
@@ -50,5 +52,44 @@ impl Selector for ast::Match {
                 }
             }
         }
+    }
+}
+
+impl Selector for ast::PatternMatch {
+    fn select(&self, env: &mut Environment) -> bool {
+        let line = match &env.event {
+            Event::Line(line) => line,
+            _ => return false,
+        };
+
+        let mut parts = env.seperator.split(&line);
+        for pattern in &self.patterns {
+            let part = match parts.next() {
+                Some(part) => part,
+                None => return false,
+            };
+
+            match pattern {
+                ast::Pattern::Identifier(_) => continue,
+                ast::Pattern::Literal(ast::Literal::Regex(regex)) => {
+                    if !regex.is_match(part) {
+                        return false
+                    }
+                }
+
+                ast::Pattern::Literal(val @ ast::Literal::String(_, _)) => {
+                    match val.to_value(env) {
+                        Value::String(s) => {
+                            if s != part {
+                                return false
+                            }
+                        }
+                        _ => unreachable!()
+                    }
+                }
+            };
+        }
+
+        true
     }
 }

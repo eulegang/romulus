@@ -1,11 +1,13 @@
 extern crate romulus;
+extern crate regex;
 
 use romulus::Interpreter;
 use romulus::runtime::FunctionRegistry;
+use regex::Regex;
 
 macro_rules! run_interpreter {
     ($prog: expr, $input: expr) => {{
-        let interpreter = Interpreter::new($prog, FunctionRegistry::default()).unwrap();
+        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), FunctionRegistry::default()).unwrap();
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
 
@@ -63,6 +65,18 @@ fn symbolic_anchors() {
             ""
         ),
         "first\nlast\n".to_string()
+    );
+}
+
+#[test]
+fn capture_groups() {
+    assert_eq!(
+        run_interpreter!(
+            "['<none>', _, id] { print(id) }",
+            "<none>                                     <none>              e8de0ade2a84        4 months ago        939MB\n<none>                                     <none>              a6595f96c20b        4 months ago        939MB\n<none>                                     <none>              5e0c040d4ed2        4 months ago        939MB\n<none>                                     <none>              8bd309d63e40        4 months ago        939MB\n<none>                                     <none>              ec6f20e8cd4e        4 months ago        939MB\n<none>                                     <none>              2962fce1c8c3        4 months ago        939MB\n<none>                                     <none>              a20624c0aa07        4 months ago        939MB\n<none>                                     <none>              c8214373eb1b        4 months ago        939MB\nubuntu                                     19.05               a3cb70e64afb        36 months ago       222MB"
+        ),
+        "e8de0ade2a84\na6595f96c20b\n5e0c040d4ed2\n8bd309d63e40\nec6f20e8cd4e\n2962fce1c8c3\na20624c0aa07\nc8214373eb1b\n"
+
     );
 }
 

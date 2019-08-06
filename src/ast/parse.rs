@@ -85,6 +85,12 @@ impl Parsable for Body {
 
 impl Parsable for Selector {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Selector, usize), String> {
+        if tokens.get(pos) == Some(&Token::Paren('[')) {
+            let (pattern_match, next) = PatternMatch::parse(tokens, pos)?;
+
+            return Ok((Selector::Pattern(pattern_match), next))
+        }
+
         let (s, next) = Match::parse(tokens, pos)?;
 
         if Some(&Token::Comma) != tokens.get(next) {
@@ -94,6 +100,53 @@ impl Parsable for Selector {
         let (e, after_end) = Match::parse(tokens, next + 1)?;
 
         Ok((Selector::Range(Range(s, e)), after_end))
+    }
+}
+
+impl Parsable for PatternMatch {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(PatternMatch, usize), String> {
+        let token = guard_eof!(tokens.get(pos));
+
+        if token != &Token::Paren('[') {
+            return Err(format!("expected start to pattern match but received {:?}", token))
+        }
+
+        if tokens.get(pos+1) == Some(&Token::Paren(']')) {
+            return Ok((PatternMatch { patterns: vec![] }, pos + 2))
+        }
+
+        let mut patterns = Vec::new();
+        let mut cur = pos + 1;
+
+        loop {
+            let (pattern, after_pat) = Pattern::parse(&tokens, cur)?;
+            cur = after_pat;
+            patterns.push(pattern);
+
+            if Some(&Token::Paren(']')) == tokens.get(cur) {
+                break;
+            }
+
+            if Some(&Token::Comma) != tokens.get(cur) {
+                return Err(format!("expected comma but received {:?}", tokens.get(cur)));
+            }
+
+            cur += 1;
+        }
+
+        Ok((PatternMatch { patterns }, cur + 1))
+    }
+}
+
+impl Parsable for Pattern {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(Pattern, usize), String> {
+        try_rewrap!(Literal, Pattern::Literal, tokens, pos);
+
+        if let Some(Token::Identifier(name)) = tokens.get(pos) {
+            return Ok((Pattern::Identifier(name.to_string()), pos + 1));
+        };
+
+        Err(format!("Expected litteral or identifier but received: {:?}", tokens.get(pos)))
     }
 }
 
@@ -338,5 +391,32 @@ mod parse_tests {
                                           )]
             })
             );
+    }
+
+    #[test]
+    fn parse_pattern_match() {
+        let tokens = match lex("['<none>', _, id] { print(id) }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(Seq {
+                subnodes: vec![Body::Guard(
+                              Selector::Pattern(
+                                  PatternMatch{ patterns: vec![
+                                      Pattern::Literal(Literal::String("<none>".to_string(), false)),
+                                      Pattern::Identifier("_".to_string()),
+                                      Pattern::Identifier("id".to_string()),
+                              ]}),
+                              Seq {
+                                  subnodes: vec![Body::Bare(Function {
+                                      name: String::from("print"),
+                                      args: vec![Expression::Identifier("id".to_string())],
+                                  })]
+                              })]
+            })
+        );
     }
 }

@@ -16,6 +16,27 @@ pub enum Literal {
     String(String, bool),
 }
 
+/// A pattern match 
+///
+/// ```text
+/// ["some ${var}", _, /abc/, 'xyz']
+/// ```
+#[derive(Debug, PartialEq)]
+pub struct PatternMatch {
+    /// The sub patterns to be matched against
+    pub patterns: Vec<Pattern>
+}
+
+/// A sub pattern of a pattern match
+#[derive(Debug, PartialEq)]
+pub enum Pattern {
+    /// Regex or string literals
+    Literal(Literal),
+
+    /// Identifier to bind to
+    Identifier(String),
+}
+
 /// A match node which guard a body statement
 ///
 /// one of the basic concepts in romulus is to trigger 
@@ -114,6 +135,14 @@ pub enum Selector {
     /// }
     /// ```
     Range(Range),
+
+    /// A pattern is given
+    /// ```text
+    /// [/none/, _, id] {
+    ///   print()
+    /// }
+    /// ```
+    Pattern(PatternMatch),
 }
 
 /// A expression
