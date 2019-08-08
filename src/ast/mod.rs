@@ -155,6 +155,12 @@ pub enum Expression {
     Identifier(String),
 }
 
+/// A statement
+#[derive(Debug, PartialEq)]
+pub enum Statement {
+    Print(Expression)
+}
+
 /// A function call
 #[derive(Debug, PartialEq)]
 pub struct Function {
@@ -165,7 +171,7 @@ pub struct Function {
 /// A guarded statement or a plain one
 #[derive(Debug, PartialEq)]
 pub enum Body {
-    Bare(Function),
+    Bare(Statement),
     Guard(Selector, Seq),
 }
 

@@ -40,3 +40,13 @@ impl Operation for ast::Function {
         env.call(self.name.clone(), values);
     }
 }
+
+impl Operation for ast::Statement {
+    fn perform(&self, env: &mut Environment) {
+        match self {
+           ast::Statement::Print(expr) => {
+               let _ = writeln!(env.out, "{}", expr.to_value(env));
+           }
+        }
+    }
+}

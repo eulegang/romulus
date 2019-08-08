@@ -77,7 +77,7 @@ impl Parsable for Body {
 
             Ok((Body::Guard(sel, Seq { subnodes }), current + 1))
         } else {
-            let (node, next) = Function::parse(&tokens, pos)?;
+            let (node, next) = Statement::parse(&tokens, pos)?;
             Ok((Body::Bare(node), next))
         }
     }
@@ -260,6 +260,34 @@ impl Parsable for Function {
     }
 }
 
+impl Parsable for Statement {
+    fn parse(tokens: &[Token], pos: usize) -> Result<(Statement, usize), String> {
+        let token = guard_eof!(tokens.get(pos));
+
+        let id = match token {
+            Token::Identifier(id) => id,
+            _ => return Err(format!("expected identifier but received {:?}", token)),
+        };
+
+        let parens = tokens.get(pos+1) == Some(&Token::Paren('('));
+        let param_pos = if parens { pos + 2 } else { pos + 1 };
+
+        let (statement, end_pos) = match &id[..] {
+            "print" => { 
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Print(expr), p)
+            }
+            _ => return Err(format!("expected a valid statement but received invalid one {:?}", id)),
+        };
+
+        if parens && tokens.get(end_pos) != Some(&Token::Paren(')')) {
+            return Err("unterminated statement".to_string());
+        }
+
+        Ok((statement, if parens { end_pos + 1 } else { end_pos }))
+    }
+}
+
 impl Parsable for Expression {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Expression, usize), String> {
         try_rewrap!(Literal, Expression::Literal, tokens, pos);
@@ -308,13 +336,8 @@ mod parse_tests {
                 subnodes: vec![Body::Guard(
                               Selector::Match(Match::Regex(Box::new(Regex::new("needle").unwrap()))),
                               Seq {
-                                  subnodes: vec![Body::Bare(Function {
-                                      name: String::from("print"),
-                                      args: vec![Expression::Literal(Literal::String(
-                                              "found it".to_string(),
-                                              false
-                                              ))],
-                                  })]
+                                  subnodes: vec![Body::Bare(Statement::Print(Expression::Literal(
+                                                        Literal::String("found it".to_string(), false))))]
                               }
                               )]
             })
@@ -322,7 +345,7 @@ mod parse_tests {
     }
 
     #[test]
-    fn basic_func() {
+    fn basic_statement() {
         let tokens = match lex("print('found it')") {
             Ok(tokens) => tokens,
             Err(msg) => panic!(msg),
@@ -331,20 +354,15 @@ mod parse_tests {
         assert_eq!(
             parse(tokens),
             Ok(Seq {
-                subnodes: vec![Body::Bare(Function {
-                    name: String::from("print"),
-                    args: vec![Expression::Literal(Literal::String(
-                            "found it".to_string(),
-                            false
-                            ))],
-                })]
+                subnodes: vec![Body::Bare(Statement::Print(Expression::Literal(
+                                      Literal::String("found it".to_string(), false))))],
             })
             );
     }
 
     #[test]
     fn parse_range() {
-        let tokens = match lex("/a/,/b/ { print() }") {
+        let tokens = match lex("/a/,/b/ { print _ }") {
             Ok(tokens) => tokens,
             Err(msg) => panic!(msg),
         };
@@ -358,10 +376,7 @@ mod parse_tests {
                                       Match::Regex(Box::new(Regex::new("b").unwrap()))
                                       )),
                                       Seq {
-                                          subnodes: vec![Body::Bare(Function {
-                                              name: String::from("print"),
-                                              args: vec![],
-                                          })]
+                                          subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("_".to_string())))]
                                       }
                                       )]
             })
@@ -383,10 +398,7 @@ mod parse_tests {
                                           Regex::new("Type: (?P<type>.*)").unwrap()
                                           ))),
                                           Seq {
-                                              subnodes: vec![Body::Bare(Function {
-                                                  name: String::from("print"),
-                                                  args: vec![Expression::Identifier("type".to_string())],
-                                              })]
+                                              subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("type".to_string())))]
                                           }
                                           )]
             })
@@ -411,10 +423,7 @@ mod parse_tests {
                                       Pattern::Identifier("id".to_string()),
                               ]}),
                               Seq {
-                                  subnodes: vec![Body::Bare(Function {
-                                      name: String::from("print"),
-                                      args: vec![Expression::Identifier("id".to_string())],
-                                  })]
+                                  subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("id".to_string())))]
                               })]
             })
         );
