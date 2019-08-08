@@ -79,6 +79,10 @@ fn extract_regex_scope(scope: &mut Scope, regex: &Regex, line: &str) {
     if let Some(capture) = regex.captures(line) {
         for name in regex.capture_names() {
             if let Some(n) = name {
+                if n == "_" {
+                    continue;
+                }
+
                 if let Some(m) = capture.name(n) {
                     scope.set(n.to_string(), m.as_str().to_string())
                 }

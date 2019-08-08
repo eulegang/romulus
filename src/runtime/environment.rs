@@ -54,6 +54,13 @@ impl<'a> Environment<'a> {
 impl<'a> Environment<'a> {
     /// Looks up a variable from the stack of scopes
     pub fn lookup(&self, key: &str) -> Option<String> {
+        if key == "_" {
+            match self.event {
+                Event::Line(ref s) => return Some(s.clone()),
+                _ => return Some(String::new()),
+            };
+        }
+
         for scope in self.scope_stack.iter().rev() {
             if let Some(value) = scope.get(key) {
                 return Some(value.to_string());
