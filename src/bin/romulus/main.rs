@@ -13,7 +13,6 @@ use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
 use romulus::Interpreter;
-use romulus::runtime::FunctionRegistry;
 use std::fmt::Display;
 use regex::Regex;
 
@@ -89,11 +88,11 @@ fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     };
 
     if let Some(expr) = matches.value_of("expr") {
-        return ok_or_exit(Interpreter::new(expr, sep, FunctionRegistry::default()));
+        return ok_or_exit(Interpreter::new(expr, sep));
     }
 
     if let Some(filename) = matches.value_of("file") {
-        return ok_or_exit(Interpreter::file(filename, sep, FunctionRegistry::default()))
+        return ok_or_exit(Interpreter::file(filename, sep))
     }
 
     unreachable!()

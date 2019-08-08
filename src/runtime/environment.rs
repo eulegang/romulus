@@ -1,5 +1,5 @@
 use std::io::Write;
-use super::{Scope, RangeScopeTracker, Value, FunctionRegistry};
+use super::{Scope, RangeScopeTracker};
 use regex::Regex;
 use crate::ast::Seq;
 use crate::ops::RangeCap;
@@ -26,7 +26,6 @@ pub struct Environment<'a> {
     /// Current event being handled
     pub event: Event,
 
-    pub(crate) reg: &'a FunctionRegistry,
     scope_stack: Vec<Scope>,
 
     pub(crate) seperator: Regex,
@@ -38,11 +37,10 @@ pub struct Environment<'a> {
 
 impl<'a> Environment<'a> {
     /// Creates a new environment
-    pub fn new<W: Write>(w: &'a mut W, node: &Seq, seperator: Regex, reg: &'a FunctionRegistry) -> Environment<'a> {
+    pub fn new<W: Write>(w: &'a mut W, node: &Seq, seperator: Regex) -> Environment<'a> {
         Environment {
             lineno: 0,
             event: Event::Begin,
-            reg,
             scope_stack: Vec::new(),
             seperator,
             out: w,
@@ -76,15 +74,6 @@ impl<'a> Environment<'a> {
 
     pub(crate) fn pop(&mut self) {
         self.scope_stack.pop();
-    }
-
-    pub(crate) fn call(&mut self, name: String, args: Vec<Value>) {
-        let func = match self.reg.get(&name) {
-            Some(f) => f,
-            None => panic!(format!("expected {} to be defined", name)),
-        };
-
-        (func.proc)(self, &args);
     }
 }
 

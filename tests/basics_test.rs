@@ -2,12 +2,11 @@ extern crate romulus;
 extern crate regex;
 
 use romulus::Interpreter;
-use romulus::runtime::FunctionRegistry;
 use regex::Regex;
 
 macro_rules! run_interpreter {
     ($prog: expr, $input: expr) => {{
-        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), FunctionRegistry::default()).unwrap();
+        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap()).unwrap();
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
 

@@ -3,11 +3,10 @@
 mod scope;
 mod environment;
 mod range_scope_tracker;
-mod func;
-mod func_impl;
+mod val;
 
 pub use scope::Scope;
 pub use environment::{Environment, Event};
-pub use func::{Value, FunctionRegistry, Func};
+pub use val::{Value};
 pub(crate) use range_scope_tracker::RangeScopeTracker;
 

@@ -1,5 +1,4 @@
 use super::*;
-use crate::runtime::Value;
 use crate::ast;
 
 pub trait Operation {
@@ -26,18 +25,6 @@ impl Operation for ast::Body {
                 }
             }
         }
-    }
-}
-
-impl Operation for ast::Function {
-    fn perform(&self, env: &mut Environment) {
-        let values: Vec<Value> = self
-            .args
-            .iter()
-            .map(|expr| -> Value { expr.to_value(&env) })
-            .collect();
-
-        env.call(self.name.clone(), values);
     }
 }
 
