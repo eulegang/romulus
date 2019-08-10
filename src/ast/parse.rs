@@ -293,7 +293,12 @@ impl Parsable for Statement {
 
 impl Parsable for Expression {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Expression, usize), String> {
-        try_rewrap!(Literal, Expression::Literal, tokens, pos);
+        //try_rewrap!(Literal, Expression::Literal, tokens, pos);
+        let token = guard_eof!(tokens.get(pos));
+
+        if let Token::String(content, interpolatable)  = token {
+            return Ok((Expression::String(content.to_string(), *interpolatable), pos+1))
+        }
 
         if let Some(Token::Identifier(name)) = tokens.get(pos) {
             return Ok((Expression::Identifier(name.to_string()), pos + 1));
@@ -341,8 +346,8 @@ mod parse_tests {
     }
 
     macro_rules! quote {
-        (s$ast: expr) => { Literal::String($ast.to_string(), false) };
-        ($ast: expr) => { Literal::String($ast.to_string(), true) }
+        (s$ast: expr) => { Expression::String($ast.to_string(), false) };
+        ($ast: expr) => { Expression::String($ast.to_string(), true) }
     }
 
     macro_rules! rmatch {
@@ -382,7 +387,7 @@ mod parse_tests {
                 Body::Guard(
                     selector![m rmatch!("needle")],
                     seq![
-                        Body::Bare(Statement::Print(Expression::Literal(quote![s"found it"])))
+                        Body::Bare(Statement::Print(quote![s"found it"]))
                     ]
                 )
             ])
@@ -399,7 +404,7 @@ mod parse_tests {
         assert_eq!(
             parse(tokens),
             Ok(seq![
-                Body::Bare(Statement::Print(Expression::Literal(quote![s"found it"])))
+                Body::Bare(Statement::Print(quote![s"found it"]))
             ])
         );
     }
@@ -452,7 +457,7 @@ mod parse_tests {
             Ok(seq![
                 Body::Guard(
                     selector![
-                        Pattern::Literal(quote![s"<none>"]),
+                        Pattern::Literal(Literal::String("<none>".to_string(), false)),
                         Pattern::Identifier("_".to_string()),
                         Pattern::Identifier("id".to_string())
                     ],
@@ -475,7 +480,7 @@ mod parse_tests {
             parse(tokens),
             Ok(seq![
                Body::Guard(
-                   selector!(Pattern::Literal(quote![s"DONE"])),
+                   selector!(Pattern::Literal(Literal::String("DONE".to_string(), false))),
                    seq![Body::Bare(Statement::Quit)]
                ),
                Body::Guard(

@@ -148,9 +148,8 @@ pub enum Selector {
 /// A expression
 #[derive(Debug, PartialEq)]
 pub enum Expression {
-    /// A litteral value
-    Literal(Literal),
-
+    /// A string expression literal
+    String(String, bool),
     /// A variable to be resolved
     Identifier(String),
 }
