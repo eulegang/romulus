@@ -158,7 +158,8 @@ pub enum Expression {
 /// A statement
 #[derive(Debug, PartialEq)]
 pub enum Statement {
-    Print(Expression)
+    /// Print the given expression
+    Print(Expression),
 }
 
 /// A function call
