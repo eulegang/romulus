@@ -326,6 +326,49 @@ mod parse_tests {
     use crate::lex::lex;
     use super::*;
 
+    macro_rules! seq {
+        ($($ast: expr),*) => {
+            {
+                let mut subnodes = Vec::new();
+
+                $(
+                    subnodes.push($ast);
+                )*
+
+                Seq { subnodes }
+            }
+        }
+    }
+
+    macro_rules! quote {
+        (s$ast: expr) => { Literal::String($ast.to_string(), false) };
+        ($ast: expr) => { Literal::String($ast.to_string(), true) }
+    }
+
+    macro_rules! rmatch {
+        ($ast: expr) => { Match::Regex(Box::new(Regex::new($ast).unwrap())) }
+    }
+
+    macro_rules! id {
+        ($ast: expr) => { Expression::Identifier($ast.to_string()) }
+    }
+
+    macro_rules! selector {
+        (m$ast: expr) => { Selector::Match($ast) };
+        (-$start:expr, $end:expr) => { Selector::Range(Range($start, $end)) };
+        ($($ast: expr),*) => {
+            {
+                let mut patterns = Vec::new();
+
+                $(
+                    patterns.push($ast);
+                )*
+
+                Selector::Pattern(PatternMatch { patterns })
+            }
+        }
+    }
+
     #[test]
     fn basic_parse() {
         let tokens = match lex("/needle/ { print('found it') }") {
@@ -335,16 +378,15 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![Body::Guard(
-                              Selector::Match(Match::Regex(Box::new(Regex::new("needle").unwrap()))),
-                              Seq {
-                                  subnodes: vec![Body::Bare(Statement::Print(Expression::Literal(
-                                                        Literal::String("found it".to_string(), false))))]
-                              }
-                              )]
-            })
-            );
+            Ok(seq![
+                Body::Guard(
+                    selector![m rmatch!("needle")],
+                    seq![
+                        Body::Bare(Statement::Print(Expression::Literal(quote![s"found it"])))
+                    ]
+                )
+            ])
+        );
     }
 
     #[test]
@@ -356,11 +398,10 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![Body::Bare(Statement::Print(Expression::Literal(
-                                      Literal::String("found it".to_string(), false))))],
-            })
-            );
+            Ok(seq![
+                Body::Bare(Statement::Print(Expression::Literal(quote![s"found it"])))
+            ])
+        );
     }
 
     #[test]
@@ -372,18 +413,13 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![Body::Guard(
-                              Selector::Range(Range(
-                                      Match::Regex(Box::new(Regex::new("a").unwrap())),
-                                      Match::Regex(Box::new(Regex::new("b").unwrap()))
-                                      )),
-                                      Seq {
-                                          subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("_".to_string())))]
-                                      }
-                                      )]
-            })
-            );
+            Ok(seq![
+                Body::Guard(
+                    selector![- rmatch!("a"), rmatch!("b")],
+                    seq![Body::Bare(Statement::Print(id!("_")))]
+                )
+            ])
+        );
     }
 
     #[test]
@@ -395,17 +431,13 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![Body::Guard(
-                              Selector::Match(Match::Regex(Box::new(
-                                          Regex::new("Type: (?P<type>.*)").unwrap()
-                                          ))),
-                                          Seq {
-                                              subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("type".to_string())))]
-                                          }
-                                          )]
-            })
-            );
+            Ok(seq![
+                Body::Guard(
+                    selector![m rmatch!("Type: (?P<type>.*)")],
+                    seq![Body::Bare(Statement::Print(id!("type")))]
+                )
+            ])
+        );
     }
 
     #[test]
@@ -417,18 +449,18 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![Body::Guard(
-                              Selector::Pattern(
-                                  PatternMatch{ patterns: vec![
-                                      Pattern::Literal(Literal::String("<none>".to_string(), false)),
-                                      Pattern::Identifier("_".to_string()),
-                                      Pattern::Identifier("id".to_string()),
-                              ]}),
-                              Seq {
-                                  subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("id".to_string())))]
-                              })]
-            })
+            Ok(seq![
+                Body::Guard(
+                    selector![
+                        Pattern::Literal(quote![s"<none>"]),
+                        Pattern::Identifier("_".to_string()),
+                        Pattern::Identifier("id".to_string())
+                    ],
+                    seq![
+                       Body::Bare(Statement::Print(id!("id")))
+                    ]
+                 )
+            ])
         );
     }
 
@@ -441,24 +473,16 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(Seq {
-                subnodes: vec![
-                    Body::Guard(
-                          Selector::Pattern(
-                              PatternMatch{ patterns: vec![
-                                  Pattern::Literal(Literal::String("DONE".to_string(), false)),
-                          ]}),
-                          Seq {
-                              subnodes: vec![Body::Bare(Statement::Quit)]
-                          }),
-                    Body::Guard(
-                        Selector::Match(Match::Regex(Box::new(Regex::new("thing").unwrap()))),
-                        Seq {
-                            subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("_".to_string())))]
-                        }
-                    )
-                ]
-            })
+            Ok(seq![
+               Body::Guard(
+                   selector!(Pattern::Literal(quote![s"DONE"])),
+                   seq![Body::Bare(Statement::Quit)]
+               ),
+               Body::Guard(
+                   selector![m rmatch!("thing")],
+                   seq![Body::Bare(Statement::Print(id!("_")))]
+               )
+            ])
         );
     }
 }
