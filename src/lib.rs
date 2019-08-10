@@ -79,6 +79,8 @@ impl Interpreter {
 
             self.node.perform(&mut env);
             env.tracker.reset();
+
+            if env.quit { return }
         }
 
         env.event = Event::End;

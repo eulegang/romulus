@@ -277,6 +277,9 @@ impl Parsable for Statement {
                 let (expr, p) = Expression::parse(tokens, param_pos)?;
                 (Statement::Print(expr), p)
             }
+            "quit" => {
+                (Statement::Quit, param_pos)
+            }
             _ => return Err(format!("expected a valid statement but received invalid one {:?}", id)),
         };
 
@@ -425,6 +428,36 @@ mod parse_tests {
                               Seq {
                                   subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("id".to_string())))]
                               })]
+            })
+        );
+    }
+
+    #[test]
+    fn parse_statement_patterns() {
+        let tokens = match lex("['DONE'] { quit }\n/thing/{print _}") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(Seq {
+                subnodes: vec![
+                    Body::Guard(
+                          Selector::Pattern(
+                              PatternMatch{ patterns: vec![
+                                  Pattern::Literal(Literal::String("DONE".to_string(), false)),
+                          ]}),
+                          Seq {
+                              subnodes: vec![Body::Bare(Statement::Quit)]
+                          }),
+                    Body::Guard(
+                        Selector::Match(Match::Regex(Box::new(Regex::new("thing").unwrap()))),
+                        Seq {
+                            subnodes: vec![Body::Bare(Statement::Print(Expression::Identifier("_".to_string())))]
+                        }
+                    )
+                ]
             })
         );
     }

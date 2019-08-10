@@ -160,6 +160,7 @@ pub enum Expression {
 pub enum Statement {
     /// Print the given expression
     Print(Expression),
+    Quit,
 }
 
 /// A function call

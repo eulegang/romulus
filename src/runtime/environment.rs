@@ -26,13 +26,16 @@ pub struct Environment<'a> {
     /// Current event being handled
     pub event: Event,
 
-    scope_stack: Vec<Scope>,
+    /// Where prints should write
+    pub out: &'a mut dyn Write,
+
+    pub(crate) quit: bool,
 
     pub(crate) seperator: Regex,
 
-    /// Where prints should write
-    pub out: &'a mut dyn Write,
     pub(crate) tracker: RangeScopeTracker,
+
+    scope_stack: Vec<Scope>,
 }
 
 impl<'a> Environment<'a> {
@@ -42,6 +45,7 @@ impl<'a> Environment<'a> {
             lineno: 0,
             event: Event::Begin,
             scope_stack: Vec::new(),
+            quit: false,
             seperator,
             out: w,
             tracker: RangeScopeTracker::new(node.num_ranges()),

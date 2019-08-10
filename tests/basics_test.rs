@@ -79,3 +79,14 @@ fn capture_groups() {
     );
 }
 
+#[test]
+fn quit() {
+    assert_eq!(
+        run_interpreter!(
+            "/quit/ { quit } /^print: (?P<thing>.*)$/ { print thing }",
+            "print: ping\nprint: ping\nprint: ping\nprint: quit\nprint: blarg"
+        ),
+        "ping\nping\nping\n"
+    )
+}
+
