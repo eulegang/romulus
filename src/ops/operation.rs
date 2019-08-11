@@ -78,6 +78,23 @@ impl Operation for ast::Statement {
                     result
                 }).into_owned());
             }
+
+            ast::Statement::Read(expr) => {
+                let mut file = match std::fs::File::open(expr.to_value(env)) {
+                    Ok(f) => f,
+                    Err(msg) => {
+                        eprintln!("Error open file {}", msg);
+                        return
+                    }
+                };
+
+                match std::io::copy(&mut file, env.out) {
+                    Ok(_) => (),
+                    Err(msg) => {
+                        eprintln!("Error cating file {}", msg);
+                    }
+                }
+            }
         }
     }
 }

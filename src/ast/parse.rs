@@ -249,6 +249,11 @@ impl Parsable for Statement {
                 (Statement::Gsubst(regex, expr), p)
             }
 
+            "read" => {
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Read(expr), p)
+            }
+
 
             _ => {
                 return Err(format!(
@@ -491,6 +496,24 @@ mod parse_tests {
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Gsubst(Box::new(Regex::new("that").unwrap()), quote!(s"other")))]
+                )
+            ])
+        );
+    }
+
+    #[test]
+    fn parse_statement_read() {
+        let tokens = match lex("/thing/ { read 'somefile.txt' }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![
+                Body::Guard(
+                    selector!(m rmatch!("thing")),
+                    seq![Body::Bare(Statement::Read(quote!(s"somefile.txt")))]
                 )
             ])
         );
