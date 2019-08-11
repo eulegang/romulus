@@ -1,10 +1,9 @@
 use super::*;
 use crate::ast::*;
-use crate::runtime::Value;
 use regex::{Captures, Regex};
 
 pub trait Valuable {
-    fn to_value(&self, env: &Environment) -> Value;
+    fn to_value(&self, env: &Environment) -> String;
 }
 
 lazy_static! {
@@ -12,21 +11,21 @@ lazy_static! {
 }
 
 impl Valuable for Expression {
-    fn to_value(&self, env: &Environment) -> Value {
+    fn to_value(&self, env: &Environment) -> String {
         match self {
             Expression::String(content, interpolatable) => {
                 if *interpolatable {
-                    interpolate(content, env)
+                    interpolate(content, env).to_string()
                 } else {
-                    Value::String(content.clone())
+                    content.to_string()
                 }
             }
 
             Expression::Identifier(name) => {
                 if let Some(value) = env.lookup(name) {
-                    Value::String(value.clone())
+                    value.to_string()
                 } else {
-                    Value::String(String::new())
+                    String::new()
                 }
             }
         }
@@ -34,21 +33,21 @@ impl Valuable for Expression {
 }
 
 impl Valuable for Pattern {
-    fn to_value(&self, env: &Environment) -> Value {
+    fn to_value(&self, env: &Environment) -> String {
         match self {
             Pattern::String(content, interpolatable) => {
                 if *interpolatable {
-                    interpolate(content, env)
+                    interpolate(content, env).to_string()
                 } else {
-                    Value::String(content.clone())
+                    content.to_string()
                 }
             }
 
             Pattern::Identifier(name) => {
                 if let Some(value) = env.lookup(name) {
-                    Value::String(value.clone())
+                    value.to_string()
                 } else {
-                    Value::String(String::new())
+                    String::new()
                 }
             }
 
@@ -57,7 +56,7 @@ impl Valuable for Pattern {
     }
 }
 
-fn interpolate(content: &str, env: &Environment) -> Value {
+fn interpolate(content: &str, env: &Environment) -> String {
     let intermediary = content.replace("\\$", "\0");
     let eval = |capture: &Captures| -> String {
         let key = String::from(&capture["name"]);
@@ -69,5 +68,5 @@ fn interpolate(content: &str, env: &Environment) -> Value {
         .to_owned()
         .to_string();
 
-    Value::String(evaled.replace('\0', "$"))
+    evaled.replace('\0', "$")
 }

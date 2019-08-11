@@ -1,6 +1,5 @@
 use super::*;
 use crate::ast;
-use crate::runtime::Value;
 
 pub trait Selector {
     fn select(&self, env: &mut Environment) -> bool;
@@ -77,14 +76,11 @@ impl Selector for ast::PatternMatch {
                     }
                 }
 
-                val @ ast::Pattern::String(_, _) => match val.to_value(env) {
-                    Value::String(s) => {
-                        if s != part {
-                            return false;
-                        }
+                val @ ast::Pattern::String(_, _) => {
+                    if val.to_value(env) != part {
+                        return false
                     }
-                    _ => unreachable!(),
-                },
+                }
             };
         }
 
