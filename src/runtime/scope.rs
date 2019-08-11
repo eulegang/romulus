@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use regex::Regex;
+use std::ops::AddAssign;
 
 /// A scope containing variables
 #[derive(Clone)]
@@ -13,6 +15,26 @@ impl Scope {
             local: HashMap::new(),
         }
     }
+
+    pub fn from_regex(regex: &Regex, line: &str) -> Scope {
+        let mut scope = Scope::new();
+
+        if let Some(capture) = regex.captures(line) {
+            for name in regex.capture_names() {
+                if let Some(n) = name {
+                    if n == "_" {
+                        continue;
+                    }
+
+                    if let Some(m) = capture.name(n) {
+                        scope.set(n.to_string(), m.as_str().to_string())
+                    }
+                }
+            }
+        }
+
+        scope
+    }
 }
 
 impl Scope {
@@ -24,5 +46,13 @@ impl Scope {
     /// Get a variable from the current scope
     pub fn get(&self, name: &str) -> Option<&String> {
         self.local.get(name)
+    }
+}
+
+impl AddAssign for Scope {
+    fn add_assign(&mut self, other: Scope) {
+        for (key, value) in other.local {
+            self.local.insert(key, value);
+        }
     }
 }

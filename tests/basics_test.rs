@@ -89,3 +89,14 @@ fn quit() {
         "ping\nping\nping\n"
     )
 }
+
+#[test]
+fn subst() {
+    assert_eq!(
+        run_interpreter!(
+            "/blarg/ { subst(/blarg (?P<name>[a-zA-Z0-9]+)/, \"ping ${name}\") print _ } ",
+            "ping x; blarg yz; blarg xyz\n"
+        ),
+        "ping x; ping yz; blarg xyz\n"
+    );
+}

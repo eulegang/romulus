@@ -147,11 +147,12 @@ pub enum Expression {
 }
 
 /// A statement
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum Statement {
     /// Print the given expression
     Print(Expression),
     Quit,
+    Subst(Box<Regex>, Expression)
 }
 
 /// A guarded statement or a plain one
@@ -190,3 +191,16 @@ impl PartialEq for Pattern {
         }
     }
 }
+
+impl PartialEq for Statement {
+    fn eq(&self, other: &Statement) -> bool {
+        match (self, other) {
+            (Statement::Quit, Statement::Quit) => true,
+            (Statement::Print(se), Statement::Print(oe)) => se == oe,
+            (Statement::Subst(sr, se), Statement::Subst(or, oe)) => 
+                sr.to_string() == or.to_string() && se == oe,
+            _ => false
+        }
+    }
+}
+

@@ -1,5 +1,6 @@
 use super::*;
 use crate::ast;
+use regex::Captures;
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
@@ -48,6 +49,17 @@ impl Operation for ast::Statement {
             }
 
             ast::Statement::Quit => env.quit = true,
+
+            ast::Statement::Subst(regex, s) => {
+                let line = match &env.event {
+                    Event::Line(line) => line.to_string(),
+                    _ => return
+                };
+
+                env.push(Scope::from_regex(regex, &line));
+                env.event = Event::Line(regex.replace(&line, |_: &Captures| s.to_value(env)).into_owned());
+                env.pop();
+            }
         }
     }
 }

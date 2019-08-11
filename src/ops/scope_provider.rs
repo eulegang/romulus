@@ -1,6 +1,5 @@
 use super::*;
 use crate::ast;
-use regex::Regex;
 
 pub trait ScopeProvider {
     fn scope(&self, env: &Environment) -> Scope;
@@ -36,7 +35,7 @@ impl ScopeProvider for ast::Match {
             ast::Match::Index(_) => (),
             ast::Match::Regex(rgx) => {
                 if let Event::Line(line) = &env.event {
-                    extract_regex_scope(&mut scope, rgx, line)
+                    scope += Scope::from_regex(rgx, line)
                 }
             }
         }
@@ -65,7 +64,7 @@ impl ScopeProvider for ast::PatternMatch {
                 ast::Pattern::Identifier(id) if id == "_" => (),
                 ast::Pattern::Identifier(id) => scope.set(id.clone(), part.to_string()),
                 ast::Pattern::String(_, _) => (),
-                ast::Pattern::Regex(rgx) => extract_regex_scope(&mut scope, rgx, line),
+                ast::Pattern::Regex(rgx) => scope += Scope::from_regex(rgx, line),
             }
         }
 
@@ -73,19 +72,3 @@ impl ScopeProvider for ast::PatternMatch {
     }
 }
 
-#[inline]
-fn extract_regex_scope(scope: &mut Scope, regex: &Regex, line: &str) {
-    if let Some(capture) = regex.captures(line) {
-        for name in regex.capture_names() {
-            if let Some(n) = name {
-                if n == "_" {
-                    continue;
-                }
-
-                if let Some(m) = capture.name(n) {
-                    scope.set(n.to_string(), m.as_str().to_string())
-                }
-            }
-        }
-    }
-}
