@@ -1,21 +1,20 @@
 use super::*;
-use regex::{Captures, Regex};
 use crate::ast::*;
 use crate::runtime::Value;
+use regex::{Captures, Regex};
 
 pub trait Valuable {
     fn to_value(&self, env: &Environment) -> Value;
 }
 
 lazy_static! {
-    static ref INTERPOLATOR: Regex =
-        Regex::new(r"\$\{(?P<name>[a-zA-Z0-9_]+)\}").unwrap();
+    static ref INTERPOLATOR: Regex = Regex::new(r"\$\{(?P<name>[a-zA-Z0-9_]+)\}").unwrap();
 }
 
 impl Valuable for Expression {
     fn to_value(&self, env: &Environment) -> Value {
         match self {
-            Expression::String(content, interpolatable) =>  {
+            Expression::String(content, interpolatable) => {
                 if *interpolatable {
                     interpolate(content, env)
                 } else {
@@ -37,7 +36,7 @@ impl Valuable for Expression {
 impl Valuable for Pattern {
     fn to_value(&self, env: &Environment) -> Value {
         match self {
-            Pattern::String(content, interpolatable) =>  {
+            Pattern::String(content, interpolatable) => {
                 if *interpolatable {
                     interpolate(content, env)
                 } else {
@@ -65,7 +64,10 @@ fn interpolate(content: &str, env: &Environment) -> Value {
         env.lookup(&key).unwrap_or_default()
     };
 
-    let evaled = INTERPOLATOR.replace_all(&intermediary, eval).to_owned().to_string();
+    let evaled = INTERPOLATOR
+        .replace_all(&intermediary, eval)
+        .to_owned()
+        .to_string();
 
     Value::String(evaled.replace('\0', "$"))
 }

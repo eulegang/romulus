@@ -1,5 +1,5 @@
-use crate::lex::Token;
 use super::*;
+use crate::lex::Token;
 
 /// Parses a romulus token stream and creates a romulus AST,
 /// or returns an error message
@@ -62,9 +62,9 @@ impl Parsable for Body {
 
             if Some(&Token::Paren('}')) != tokens.get(current) {
                 return Err(format!(
-                        "expected }} but received: {:?}",
-                        tokens.get(current)
-                        ));
+                    "expected }} but received: {:?}",
+                    tokens.get(current)
+                ));
             }
 
             Ok((Body::Guard(sel, Seq { subnodes }), current + 1))
@@ -80,7 +80,7 @@ impl Parsable for Selector {
         if tokens.get(pos) == Some(&Token::Paren('[')) {
             let (pattern_match, next) = PatternMatch::parse(tokens, pos)?;
 
-            return Ok((Selector::Pattern(pattern_match), next))
+            return Ok((Selector::Pattern(pattern_match), next));
         }
 
         let (s, next) = Match::parse(tokens, pos)?;
@@ -100,11 +100,14 @@ impl Parsable for PatternMatch {
         let token = guard_eof!(tokens.get(pos));
 
         if token != &Token::Paren('[') {
-            return Err(format!("expected start to pattern match but received {:?}", token))
+            return Err(format!(
+                "expected start to pattern match but received {:?}",
+                token
+            ));
         }
 
-        if tokens.get(pos+1) == Some(&Token::Paren(']')) {
-            return Ok((PatternMatch { patterns: vec![] }, pos + 2))
+        if tokens.get(pos + 1) == Some(&Token::Paren(']')) {
+            return Ok((PatternMatch { patterns: vec![] }, pos + 2));
         }
 
         let mut patterns = Vec::new();
@@ -134,18 +137,24 @@ impl Parsable for Pattern {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Pattern, usize), String> {
         if let Some(Token::Regex(pattern, flags)) = tokens.get(pos) {
             let regex = to_regex(pattern.to_string(), flags.to_string())?;
-            return Ok((Pattern::Regex(regex), pos + 1))
+            return Ok((Pattern::Regex(regex), pos + 1));
         }
 
         if let Some(Token::String(content, interpolatable)) = tokens.get(pos) {
-            return Ok((Pattern::String(content.to_string(), *interpolatable), pos + 1))
+            return Ok((
+                Pattern::String(content.to_string(), *interpolatable),
+                pos + 1,
+            ));
         }
 
         if let Some(Token::Identifier(name)) = tokens.get(pos) {
             return Ok((Pattern::Identifier(name.to_string()), pos + 1));
         };
 
-        Err(format!("Expected litteral or identifier but received: {:?}", tokens.get(pos)))
+        Err(format!(
+            "Expected litteral or identifier but received: {:?}",
+            tokens.get(pos)
+        ))
     }
 }
 
@@ -163,9 +172,9 @@ impl Parsable for Match {
             Token::Symbol('$') => Ok((Match::End, pos + 1)),
 
             _ => Err(format!(
-                    "expected a regex or a number but received {:?}",
-                    token
-                    )),
+                "expected a regex or a number but received {:?}",
+                token
+            )),
         }
     }
 }
@@ -176,9 +185,9 @@ impl Parsable for Range {
 
         if Some(&Token::Comma) != tokens.get(after_start) {
             return Err(format!(
-                    "expected a comma but received: {:?}",
-                    tokens.get(after_start)
-                    ));
+                "expected a comma but received: {:?}",
+                tokens.get(after_start)
+            ));
         }
 
         let (end_match, after_end) = Match::parse(&tokens, after_start + 1)?;
@@ -195,9 +204,9 @@ impl Parsable for Function {
             Token::Identifier(name) => name,
             _ => {
                 return Err(format!(
-                        "expected identifier for function name but received: {:?}",
-                        token
-                        ))
+                    "expected identifier for function name but received: {:?}",
+                    token
+                ))
             }
         };
 
@@ -207,12 +216,12 @@ impl Parsable for Function {
 
         if Some(&Token::Paren(')')) == tokens.get(pos + 2) {
             return Ok((
-                    Function {
-                        name: identifier.to_string(),
-                        args: Vec::new(),
-                    },
-                    pos + 3,
-                    ));
+                Function {
+                    name: identifier.to_string(),
+                    args: Vec::new(),
+                },
+                pos + 3,
+            ));
         }
 
         let mut args = Vec::new();
@@ -248,18 +257,21 @@ impl Parsable for Statement {
             _ => return Err(format!("expected identifier but received {:?}", token)),
         };
 
-        let parens = tokens.get(pos+1) == Some(&Token::Paren('('));
+        let parens = tokens.get(pos + 1) == Some(&Token::Paren('('));
         let param_pos = if parens { pos + 2 } else { pos + 1 };
 
         let (statement, end_pos) = match &id[..] {
-            "print" => { 
+            "print" => {
                 let (expr, p) = Expression::parse(tokens, param_pos)?;
                 (Statement::Print(expr), p)
             }
-            "quit" => {
-                (Statement::Quit, param_pos)
+            "quit" => (Statement::Quit, param_pos),
+            _ => {
+                return Err(format!(
+                    "expected a valid statement but received invalid one {:?}",
+                    id
+                ))
             }
-            _ => return Err(format!("expected a valid statement but received invalid one {:?}", id)),
         };
 
         if parens && tokens.get(end_pos) != Some(&Token::Paren(')')) {
@@ -274,15 +286,21 @@ impl Parsable for Expression {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Expression, usize), String> {
         let token = guard_eof!(tokens.get(pos));
 
-        if let Token::String(content, interpolatable)  = token {
-            return Ok((Expression::String(content.to_string(), *interpolatable), pos+1))
+        if let Token::String(content, interpolatable) = token {
+            return Ok((
+                Expression::String(content.to_string(), *interpolatable),
+                pos + 1,
+            ));
         }
 
         if let Some(Token::Identifier(name)) = tokens.get(pos) {
             return Ok((Expression::Identifier(name.to_string()), pos + 1));
         };
 
-        Err(format!( "Expected litteral or identifier but received: {:?}", tokens.get(pos)))
+        Err(format!(
+            "Expected litteral or identifier but received: {:?}",
+            tokens.get(pos)
+        ))
     }
 }
 
@@ -301,8 +319,8 @@ fn to_regex(pat: String, flags: String) -> Result<Box<Regex>, String> {
 
 #[cfg(test)]
 mod parse_tests {
-    use crate::lex::lex;
     use super::*;
+    use crate::lex::lex;
 
     macro_rules! seq {
         ($($ast: expr),*) => {
@@ -319,16 +337,24 @@ mod parse_tests {
     }
 
     macro_rules! quote {
-        (s$ast: expr) => { Expression::String($ast.to_string(), false) };
-        ($ast: expr) => { Expression::String($ast.to_string(), true) }
+        (s$ast: expr) => {
+            Expression::String($ast.to_string(), false)
+        };
+        ($ast: expr) => {
+            Expression::String($ast.to_string(), true)
+        };
     }
 
     macro_rules! rmatch {
-        ($ast: expr) => { Match::Regex(Box::new(Regex::new($ast).unwrap())) }
+        ($ast: expr) => {
+            Match::Regex(Box::new(Regex::new($ast).unwrap()))
+        };
     }
 
     macro_rules! id {
-        ($ast: expr) => { Expression::Identifier($ast.to_string()) }
+        ($ast: expr) => {
+            Expression::Identifier($ast.to_string())
+        };
     }
 
     macro_rules! selector {
@@ -356,14 +382,10 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
-                Body::Guard(
-                    selector![m rmatch!("needle")],
-                    seq![
-                        Body::Bare(Statement::Print(quote![s"found it"]))
-                    ]
-                )
-            ])
+            Ok(seq![Body::Guard(
+                selector![m rmatch!("needle")],
+                seq![Body::Bare(Statement::Print(quote![s"found it"]))]
+            )])
         );
     }
 
@@ -376,9 +398,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
-                Body::Bare(Statement::Print(quote![s"found it"]))
-            ])
+            Ok(seq![Body::Bare(Statement::Print(quote![s"found it"]))])
         );
     }
 
@@ -391,12 +411,10 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
-                Body::Guard(
-                    selector![- rmatch!("a"), rmatch!("b")],
-                    seq![Body::Bare(Statement::Print(id!("_")))]
-                )
-            ])
+            Ok(seq![Body::Guard(
+                selector![-rmatch!("a"), rmatch!("b")],
+                seq![Body::Bare(Statement::Print(id!("_")))]
+            )])
         );
     }
 
@@ -409,12 +427,10 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
-                Body::Guard(
-                    selector![m rmatch!("Type: (?P<type>.*)")],
-                    seq![Body::Bare(Statement::Print(id!("type")))]
-                )
-            ])
+            Ok(seq![Body::Guard(
+                selector![m rmatch!("Type: (?P<type>.*)")],
+                seq![Body::Bare(Statement::Print(id!("type")))]
+            )])
         );
     }
 
@@ -427,18 +443,14 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
-                Body::Guard(
-                    selector![
-                        Pattern::String("<none>".to_string(), false),
-                        Pattern::Identifier("_".to_string()),
-                        Pattern::Identifier("id".to_string())
-                    ],
-                    seq![
-                       Body::Bare(Statement::Print(id!("id")))
-                    ]
-                 )
-            ])
+            Ok(seq![Body::Guard(
+                selector![
+                    Pattern::String("<none>".to_string(), false),
+                    Pattern::Identifier("_".to_string()),
+                    Pattern::Identifier("id".to_string())
+                ],
+                seq![Body::Bare(Statement::Print(id!("id")))]
+            )])
         );
     }
 
@@ -452,14 +464,14 @@ mod parse_tests {
         assert_eq!(
             parse(tokens),
             Ok(seq![
-               Body::Guard(
-                   selector!(Pattern::String("DONE".to_string(), false)),
-                   seq![Body::Bare(Statement::Quit)]
-               ),
-               Body::Guard(
-                   selector![m rmatch!("thing")],
-                   seq![Body::Bare(Statement::Print(id!("_")))]
-               )
+                Body::Guard(
+                    selector!(Pattern::String("DONE".to_string(), false)),
+                    seq![Body::Bare(Statement::Quit)]
+                ),
+                Body::Guard(
+                    selector![m rmatch!("thing")],
+                    seq![Body::Bare(Statement::Print(id!("_")))]
+                )
             ])
         );
     }

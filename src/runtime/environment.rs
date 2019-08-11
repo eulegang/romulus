@@ -1,8 +1,8 @@
-use std::io::Write;
-use super::{Scope, RangeScopeTracker};
-use regex::Regex;
+use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
 use crate::ops::RangeCap;
+use regex::Regex;
+use std::io::Write;
 
 /// An event to be processed
 #[derive(PartialEq)]
@@ -14,7 +14,7 @@ pub enum Event {
     Line(String),
 
     /// The end of processing
-    End
+    End,
 }
 
 /// Embodies the current state of the program

@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate clap;
 
@@ -9,12 +8,12 @@ extern crate romulus;
 extern crate regex;
 
 use clap::{App, Arg, ArgGroup, ArgMatches};
+use regex::Regex;
+use romulus::Interpreter;
+use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
-use romulus::Interpreter;
-use std::fmt::Display;
-use regex::Regex;
 
 fn main() {
     let matches = App::new("romulus")
@@ -47,7 +46,7 @@ fn main() {
                 .long("inplace")
                 .takes_value(true)
                 .requires("inputs")
-                .help("inplace replacement backup extension")
+                .help("inplace replacement backup extension"),
         )
         .arg(
             Arg::with_name("sep")
@@ -56,17 +55,14 @@ fn main() {
                 .env("RSEP")
                 .takes_value(true)
                 .default_value(" +")
-                .help("sepeartes patterns in a line")
+                .help("sepeartes patterns in a line"),
         )
         .group(
             ArgGroup::with_name("program")
                 .args(&["file", "expr"])
                 .required(true),
         )
-        .group(
-            ArgGroup::with_name("output_flow")
-                .args(&["output", "inplace"])
-        )
+        .group(ArgGroup::with_name("output_flow").args(&["output", "inplace"]))
         .arg(Arg::with_name("inputs").min_values(1))
         .get_matches();
 
@@ -92,13 +88,17 @@ fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     }
 
     if let Some(filename) = matches.value_of("file") {
-        return ok_or_exit(Interpreter::file(filename, sep))
+        return ok_or_exit(Interpreter::file(filename, sep));
     }
 
     unreachable!()
 }
 
-fn process_inplace<'a, I: Iterator<Item=&'a str>>(interpreter: Interpreter, ext: &str, inputs: &'a mut I) {
+fn process_inplace<'a, I: Iterator<Item = &'a str>>(
+    interpreter: Interpreter,
+    ext: &str,
+    inputs: &'a mut I,
+) {
     for input in inputs {
         let fin = match File::open(&input) {
             Ok(f) => f,
@@ -176,4 +176,3 @@ fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
         }
     }
 }
-

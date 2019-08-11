@@ -1,8 +1,8 @@
-extern crate romulus;
 extern crate regex;
+extern crate romulus;
 
-use romulus::Interpreter;
 use regex::Regex;
+use romulus::Interpreter;
 
 macro_rules! run_interpreter {
     ($prog: expr, $input: expr) => {{
@@ -89,4 +89,3 @@ fn quit() {
         "ping\nping\nping\n"
     )
 }
-

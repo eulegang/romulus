@@ -73,20 +73,18 @@ impl Selector for ast::PatternMatch {
                 ast::Pattern::Identifier(_) => continue,
                 ast::Pattern::Regex(regex) => {
                     if !regex.is_match(part) {
-                        return false
+                        return false;
                     }
                 }
 
-                val @ ast::Pattern::String(_, _) => {
-                    match val.to_value(env) {
-                        Value::String(s) => {
-                            if s != part {
-                                return false
-                            }
+                val @ ast::Pattern::String(_, _) => match val.to_value(env) {
+                    Value::String(s) => {
+                        if s != part {
+                            return false;
                         }
-                        _ => unreachable!()
                     }
-                }
+                    _ => unreachable!(),
+                },
             };
         }
 

@@ -6,7 +6,7 @@ mod parse;
 
 pub use parse::parse;
 
-/// A pattern match 
+/// A pattern match
 ///
 /// ```text
 /// ["some ${var}", _, /abc/, 'xyz']
@@ -14,7 +14,7 @@ pub use parse::parse;
 #[derive(Debug, PartialEq)]
 pub struct PatternMatch {
     /// The sub patterns to be matched against
-    pub patterns: Vec<Pattern>
+    pub patterns: Vec<Pattern>,
 }
 
 /// A sub pattern of a pattern match
@@ -32,8 +32,8 @@ pub enum Pattern {
 
 /// A match node which guard a body statement
 ///
-/// one of the basic concepts in romulus is to trigger 
-/// a body of code when a condition is meet. 
+/// one of the basic concepts in romulus is to trigger
+/// a body of code when a condition is meet.
 ///
 /// Here is the basic form
 ///
@@ -45,7 +45,6 @@ pub enum Pattern {
 ///
 #[derive(Debug)]
 pub enum Match {
-
     /// The case where the first line should be matched
     ///
     /// ```text
@@ -65,7 +64,7 @@ pub enum Match {
     End,
 
     /// The case to run a statements when a line number is reached
-    /// 
+    ///
     /// ```text
     /// 1 {
     ///   print("Begin of input")
@@ -95,7 +94,7 @@ pub enum Match {
 ///
 /// Ranges are start inclusive but end exclusive
 ///
-/// When a start match is a regex and has capture variables it's variables are stored and 
+/// When a start match is a regex and has capture variables it's variables are stored and
 /// supplied for each next until the range ends
 ///
 /// ```text
@@ -190,15 +189,11 @@ impl PartialEq for Match {
 impl PartialEq for Pattern {
     fn eq(&self, other: &Pattern) -> bool {
         match (self, other) {
-            (Pattern::Regex(a), Pattern::Regex(b)) =>
-                a.to_string() == b.to_string(),
-            (Pattern::String(ss, si), Pattern::String(os, oi)) =>
-                ss == os && si == oi,
-            (Pattern::Identifier(a), Pattern::Identifier(b)) =>
-                a == b,
+            (Pattern::Regex(a), Pattern::Regex(b)) => a.to_string() == b.to_string(),
+            (Pattern::String(ss, si), Pattern::String(os, oi)) => ss == os && si == oi,
+            (Pattern::Identifier(a), Pattern::Identifier(b)) => a == b,
 
             _ => false,
         }
     }
 }
-

@@ -7,15 +7,15 @@ pub struct Scope {
 }
 
 impl Scope {
-
     /// Create a new empty scope
     pub fn new() -> Scope {
-        Scope { local: HashMap::new() }
+        Scope {
+            local: HashMap::new(),
+        }
     }
 }
 
 impl Scope {
-
     /// Sets a variable in the current scope
     pub fn set(&mut self, name: String, value: String) {
         self.local.insert(name, value);
@@ -26,4 +26,3 @@ impl Scope {
         self.local.get(name)
     }
 }
-

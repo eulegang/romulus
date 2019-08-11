@@ -8,7 +8,6 @@ use std::ops::RangeInclusive;
 ///
 #[derive(Debug, PartialEq)]
 pub enum Token {
-
     /// Represents (, {, [, ], }, )
     Paren(char),
 
@@ -21,7 +20,7 @@ pub enum Token {
 
     /// Represents a Regular Expression with flags in the form of /regex/flags <br>
     /// such as `/[a-z]+/i`
-    /// 
+    ///
     /// flags supported
     /// 1. `i` - case insensitive
     /// 2. `U` - swap greediness semantics
@@ -154,7 +153,11 @@ fn chomp_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) 
 }
 
 #[inline]
-fn chomp_until_escaped<T: Iterator<Item = char>>(iter: &mut Peekable<T>, terminator: char, evaluates: bool) -> Result<Vec<char>, String> {
+fn chomp_until_escaped<T: Iterator<Item = char>>(
+    iter: &mut Peekable<T>,
+    terminator: char,
+    evaluates: bool,
+) -> Result<Vec<char>, String> {
     let mut accepted: Vec<char> = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
@@ -167,7 +170,10 @@ fn chomp_until_escaped<T: Iterator<Item = char>>(iter: &mut Peekable<T>, termina
                 Some('\\') => accepted.push('\\'),
                 Some('t') => accepted.push('\t'),
                 Some('r') => accepted.push('\r'),
-                Some('$') if evaluates => { accepted.push('\\'); accepted.push('$') }
+                Some('$') if evaluates => {
+                    accepted.push('\\');
+                    accepted.push('$')
+                }
                 Some(escaped) if escaped == terminator => accepted.push(escaped),
                 Some(escaped) => return Err(format!("cannot escape {}", escaped)),
                 None => return Err(format!("found EOF when searching for {}", &terminator)),
@@ -226,7 +232,6 @@ pub fn lex(buf: &str) -> Result<Vec<Token>, String> {
         .filter(|t| t.significant())
         .collect::<Vec<Token>>())
 }
-
 
 /// Lexes a given string and returns all tokens found
 pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
@@ -399,6 +404,6 @@ mod tests {
     fn escape() {
         let tokens = vec![Token::String("\\\n\"".to_string(), true)];
 
-        assert_eq!(lex("\"\\\\\\n\\\"\""),  Ok(tokens))
+        assert_eq!(lex("\"\\\\\\n\\\"\""), Ok(tokens))
     }
 }
