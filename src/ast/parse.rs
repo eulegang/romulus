@@ -23,14 +23,6 @@ macro_rules! guard_eof {
     };
 }
 
-macro_rules! try_rewrap {
-    ($target: ty, $rewrite: expr, $tokens: expr, $pos: expr) => {
-        if let Some((node, next_pos)) = <$target>::try_parse($tokens, $pos) {
-            return Ok(($rewrite(node), next_pos));
-        }
-    };
-}
-
 trait Parsable: Sized {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Self, usize), String>;
     fn try_parse(tokens: &[Token], pos: usize) -> Option<(Self, usize)> {
