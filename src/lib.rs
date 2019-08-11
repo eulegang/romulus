@@ -39,7 +39,6 @@ pub struct Interpreter {
 
 impl Interpreter {
     /// Creates a new interpret with a string romulus program
-    /// and a FunctionRegistry
     pub fn new<S: AsRef<str>>(buf: S, sep: Regex) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
         let node = ast::parse(tokens)?;
@@ -48,7 +47,6 @@ impl Interpreter {
     }
 
     /// Creates a new interpret with a the contents of a file
-    /// and a FunctionRegistry
     pub fn file<P: AsRef<Path>>(file: P, sep: Regex) -> Result<Interpreter, String> {
         let mut file = match File::open(file.as_ref()) {
             Ok(f) => f,

@@ -196,58 +196,6 @@ impl Parsable for Range {
     }
 }
 
-impl Parsable for Function {
-    fn parse(tokens: &[Token], pos: usize) -> Result<(Function, usize), String> {
-        let token = guard_eof!(tokens.get(pos));
-
-        let identifier = match token {
-            Token::Identifier(name) => name,
-            _ => {
-                return Err(format!(
-                    "expected identifier for function name but received: {:?}",
-                    token
-                ))
-            }
-        };
-
-        if Some(&Token::Paren('(')) != tokens.get(pos + 1) {
-            return Err(format!("expected ( but received {:?}", tokens.get(pos + 1)));
-        }
-
-        if Some(&Token::Paren(')')) == tokens.get(pos + 2) {
-            return Ok((
-                Function {
-                    name: identifier.to_string(),
-                    args: Vec::new(),
-                },
-                pos + 3,
-            ));
-        }
-
-        let mut args = Vec::new();
-        let mut cur = pos + 2;
-        loop {
-            let (expr, after_expr) = Expression::parse(&tokens, cur)?;
-            cur = after_expr;
-            args.push(expr);
-
-            if Some(&Token::Paren(')')) == tokens.get(cur) {
-                break;
-            }
-
-            if Some(&Token::Comma) != tokens.get(cur) {
-                return Err(format!("expected comma but received {:?}", tokens.get(cur)));
-            }
-
-            cur += 1;
-        }
-
-        let name = identifier.to_string();
-
-        Ok((Function { name, args }, cur + 1))
-    }
-}
-
 impl Parsable for Statement {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Statement, usize), String> {
         let token = guard_eof!(tokens.get(pos));

@@ -154,13 +154,6 @@ pub enum Statement {
     Quit,
 }
 
-/// A function call
-#[derive(Debug, PartialEq)]
-pub struct Function {
-    pub name: String,
-    pub args: Vec<Expression>,
-}
-
 /// A guarded statement or a plain one
 #[derive(Debug, PartialEq)]
 pub enum Body {
