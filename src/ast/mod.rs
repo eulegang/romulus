@@ -187,29 +187,25 @@ pub struct Seq {
 
 impl PartialEq for Match {
     fn eq(&self, other: &Match) -> bool {
-        if let (Match::Index(ai), Match::Index(bi)) = (self, other) {
-            return ai == bi;
+        match (self, other) {
+            (Match::Index(a), Match::Index(b)) => a == b,
+            (Match::Regex(a), Match::Regex(b)) => a.to_string() == b.to_string(),
+            (Match::Begin, Match::Begin) => true,
+            (Match::End, Match::End) => true,
+            _ => false,
         }
-
-        if let (Match::Regex(_), Match::Regex(_)) = (self, other) {
-            return true;
-        }
-
-        false
     }
 }
 
 impl PartialEq for Literal {
     fn eq(&self, other: &Literal) -> bool {
-        if let (Literal::Regex(_), Literal::Regex(_)) = (self, other) {
-            return true;
+        match (self, other) {
+            (Literal::Regex(a), Literal::Regex(b)) =>
+                a.to_string() == b.to_string(),
+            (Literal::String(ss, si), Literal::String(os, oi)) =>
+                ss == os && si == oi,
+            _ => false,
         }
-
-        if let (Literal::String(ss, si), Literal::String(os, oi)) = (self, other) {
-            return ss == os && si == oi;
-        }
-
-        false
     }
 }
 
@@ -218,8 +214,8 @@ impl PartialEq for Pattern {
         match (self, other) {
             (Pattern::Regex(a), Pattern::Regex(b)) =>
                 a.to_string() == b.to_string(),
-            (Pattern::String(a, _), Pattern::String(b, _)) =>
-                a == b,
+            (Pattern::String(ss, si), Pattern::String(os, oi)) =>
+                ss == os && si == oi,
             (Pattern::Identifier(a), Pattern::Identifier(b)) =>
                 a == b,
 
