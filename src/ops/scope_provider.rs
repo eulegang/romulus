@@ -65,8 +65,8 @@ impl ScopeProvider for ast::PatternMatch {
             match pattern {
                 ast::Pattern::Identifier(id) if id == "_" => (),
                 ast::Pattern::Identifier(id) => scope.set(id.clone(), part.to_string()),
-                ast::Pattern::Literal(ast::Literal::String(_, _)) => (),
-                ast::Pattern::Literal(ast::Literal::Regex(rgx)) => extract_regex_scope(&mut scope, rgx, line)
+                ast::Pattern::String(_, _) => (),
+                ast::Pattern::Regex(rgx) => extract_regex_scope(&mut scope, rgx, line)
             }
         }
 

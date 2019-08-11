@@ -140,7 +140,14 @@ impl Parsable for PatternMatch {
 
 impl Parsable for Pattern {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Pattern, usize), String> {
-        try_rewrap!(Literal, Pattern::Literal, tokens, pos);
+        if let Some(Token::Regex(pattern, flags)) = tokens.get(pos) {
+            let regex = to_regex(pattern.to_string(), flags.to_string())?;
+            return Ok((Pattern::Regex(regex), pos + 1))
+        }
+
+        if let Some(Token::String(content, interpolatable)) = tokens.get(pos) {
+            return Ok((Pattern::String(content.to_string(), *interpolatable), pos + 1))
+        }
 
         if let Some(Token::Identifier(name)) = tokens.get(pos) {
             return Ok((Pattern::Identifier(name.to_string()), pos + 1));
@@ -457,7 +464,7 @@ mod parse_tests {
             Ok(seq![
                 Body::Guard(
                     selector![
-                        Pattern::Literal(Literal::String("<none>".to_string(), false)),
+                        Pattern::String("<none>".to_string(), false),
                         Pattern::Identifier("_".to_string()),
                         Pattern::Identifier("id".to_string())
                     ],
@@ -480,7 +487,7 @@ mod parse_tests {
             parse(tokens),
             Ok(seq![
                Body::Guard(
-                   selector!(Pattern::Literal(Literal::String("DONE".to_string(), false))),
+                   selector!(Pattern::String("DONE".to_string(), false)),
                    seq![Body::Bare(Statement::Quit)]
                ),
                Body::Guard(

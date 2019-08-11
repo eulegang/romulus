@@ -71,13 +71,13 @@ impl Selector for ast::PatternMatch {
 
             match pattern {
                 ast::Pattern::Identifier(_) => continue,
-                ast::Pattern::Literal(ast::Literal::Regex(regex)) => {
+                ast::Pattern::Regex(regex) => {
                     if !regex.is_match(part) {
                         return false
                     }
                 }
 
-                ast::Pattern::Literal(val @ ast::Literal::String(_, _)) => {
+                val @ ast::Pattern::String(_, _) => {
                     match val.to_value(env) {
                         Value::String(s) => {
                             if s != part {

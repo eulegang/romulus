@@ -28,10 +28,13 @@ pub struct PatternMatch {
 }
 
 /// A sub pattern of a pattern match
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum Pattern {
-    /// Regex or string literals
-    Literal(Literal),
+    /// Regex pattern
+    Regex(Box<Regex>),
+
+    /// String Literal pattern
+    String(String, bool),
 
     /// Identifier to bind to
     Identifier(String),
@@ -207,6 +210,21 @@ impl PartialEq for Literal {
         }
 
         false
+    }
+}
+
+impl PartialEq for Pattern {
+    fn eq(&self, other: &Pattern) -> bool {
+        match (self, other) {
+            (Pattern::Regex(a), Pattern::Regex(b)) =>
+                a.to_string() == b.to_string(),
+            (Pattern::String(a, _), Pattern::String(b, _)) =>
+                a == b,
+            (Pattern::Identifier(a), Pattern::Identifier(b)) =>
+                a == b,
+
+            _ => false,
+        }
     }
 }
 

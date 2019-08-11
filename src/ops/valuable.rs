@@ -49,6 +49,29 @@ impl Valuable for Literal {
     }
 }
 
+impl Valuable for Pattern {
+    fn to_value(&self, env: &Environment) -> Value {
+        match self {
+            Pattern::String(content, interpolatable) =>  {
+                if *interpolatable {
+                    interpolate(content, env)
+                } else {
+                    Value::String(content.clone())
+                }
+            }
+
+            Pattern::Identifier(name) => {
+                if let Some(value) = env.lookup(name) {
+                    Value::String(value.clone())
+                } else {
+                    Value::String(String::new())
+                }
+            }
+
+            _ => unreachable!(),
+        }
+    }
+}
 
 fn interpolate(content: &str, env: &Environment) -> Value {
     let intermediary = content.replace("\\$", "\0");
