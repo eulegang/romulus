@@ -34,21 +34,6 @@ impl Valuable for Expression {
     }
 }
 
-impl Valuable for Literal {
-    fn to_value(&self, env: &Environment) -> Value {
-        match self {
-            Literal::Regex(regex) => Value::Regex(regex.clone()),
-            Literal::String(s, interpolatable) => {
-                if *interpolatable {
-                    interpolate(s, env)
-                } else {
-                    Value::String(s.clone())
-                }
-            }
-        }
-    }
-}
-
 impl Valuable for Pattern {
     fn to_value(&self, env: &Environment) -> Value {
         match self {

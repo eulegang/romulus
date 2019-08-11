@@ -187,26 +187,6 @@ impl Parsable for Range {
     }
 }
 
-impl Parsable for Literal {
-    fn parse(tokens: &[Token], pos: usize) -> Result<(Literal, usize), String> {
-        let token = guard_eof!(tokens.get(pos));
-
-        match token {
-            Token::Regex(pattern, flags) => {
-                let regex = to_regex(pattern.to_string(), flags.to_string())?;
-                Ok((Literal::Regex(regex), pos + 1))
-            }
-
-            Token::String(content, interpolatable) => Ok((
-                    Literal::String(content.to_string(), *interpolatable),
-                    pos + 1,
-                    )),
-
-            _ => Err(format!("expected a literal token but received {:?}", token)),
-        }
-    }
-}
-
 impl Parsable for Function {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Function, usize), String> {
         let token = guard_eof!(tokens.get(pos));
@@ -292,7 +272,6 @@ impl Parsable for Statement {
 
 impl Parsable for Expression {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Expression, usize), String> {
-        //try_rewrap!(Literal, Expression::Literal, tokens, pos);
         let token = guard_eof!(tokens.get(pos));
 
         if let Token::String(content, interpolatable)  = token {
@@ -303,12 +282,7 @@ impl Parsable for Expression {
             return Ok((Expression::Identifier(name.to_string()), pos + 1));
         };
 
-        Err(format!(
-                "Expected litteral or identifier but received: {:?}",
-                tokens.get(pos)
-                ))
-
-            //must_rewrap!(Function, Expression::Func, tokens, pos)
+        Err(format!( "Expected litteral or identifier but received: {:?}", tokens.get(pos)))
     }
 }
 

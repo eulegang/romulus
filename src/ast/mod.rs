@@ -6,16 +6,6 @@ mod parse;
 
 pub use parse::parse;
 
-/// A literal AST node 
-#[derive(Debug)]
-pub enum Literal {
-    /// A regular expression literal
-    Regex(Box<Regex>),
-
-    /// A string expression literal
-    String(String, bool),
-}
-
 /// A pattern match 
 ///
 /// ```text
@@ -192,18 +182,6 @@ impl PartialEq for Match {
             (Match::Regex(a), Match::Regex(b)) => a.to_string() == b.to_string(),
             (Match::Begin, Match::Begin) => true,
             (Match::End, Match::End) => true,
-            _ => false,
-        }
-    }
-}
-
-impl PartialEq for Literal {
-    fn eq(&self, other: &Literal) -> bool {
-        match (self, other) {
-            (Literal::Regex(a), Literal::Regex(b)) =>
-                a.to_string() == b.to_string(),
-            (Literal::String(ss, si), Literal::String(os, oi)) =>
-                ss == os && si == oi,
             _ => false,
         }
     }
