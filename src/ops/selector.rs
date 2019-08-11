@@ -78,7 +78,7 @@ impl Selector for ast::PatternMatch {
 
                 val @ ast::Pattern::String(_, _) => {
                     if val.to_value(env) != part {
-                        return false
+                        return false;
                     }
                 }
             };
