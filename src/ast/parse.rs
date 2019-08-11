@@ -231,6 +231,25 @@ impl Parsable for Statement {
 
                 (Statement::Subst(regex, expr), p)
             }
+
+            "gsubst" => {
+                let regex = match tokens.get(param_pos) {
+                    Some(Token::Regex(pat, flags)) => {
+                        to_regex(pat.to_string(), flags.to_string())?
+                    }
+                    _ => return Err(format!("expected a regex for subst but received {:?}", tokens.get(param_pos))),
+                };
+
+                if Some(&Token::Comma) != tokens.get(param_pos+1) {
+                    return Err(format!("expected a comma but found {:?}", tokens.get(param_pos+1)));
+                }
+
+                let (expr, p) = Expression::parse(tokens, param_pos + 2)?;
+
+                (Statement::Gsubst(regex, expr), p)
+            }
+
+
             _ => {
                 return Err(format!(
                     "expected a valid statement but received invalid one {:?}",
@@ -454,6 +473,24 @@ mod parse_tests {
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Subst(Box::new(Regex::new("that").unwrap()), quote!(s"other")))]
+                )
+            ])
+        );
+    }
+
+    #[test]
+    fn parse_statement_gsubst() {
+        let tokens = match lex("/thing/ { gsubst /that/, 'other' }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![
+                Body::Guard(
+                    selector!(m rmatch!("thing")),
+                    seq![Body::Bare(Statement::Gsubst(Box::new(Regex::new("that").unwrap()), quote!(s"other")))]
                 )
             ])
         );

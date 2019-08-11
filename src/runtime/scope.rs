@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use regex::Regex;
+use regex::{Regex, Captures};
 use std::ops::AddAssign;
 
 /// A scope containing variables
@@ -19,16 +19,34 @@ impl Scope {
     pub fn from_regex(regex: &Regex, line: &str) -> Scope {
         let mut scope = Scope::new();
 
-        if let Some(capture) = regex.captures(line) {
+        if let Some(captures) = regex.captures(line) {
             for name in regex.capture_names() {
                 if let Some(n) = name {
                     if n == "_" {
                         continue;
                     }
 
-                    if let Some(m) = capture.name(n) {
+                    if let Some(m) = captures.name(n) {
                         scope.set(n.to_string(), m.as_str().to_string())
                     }
+                }
+            }
+        }
+
+        scope
+    }
+
+    pub fn from_captures(regex: &Regex, captures: &Captures) -> Scope {
+        let mut scope = Scope::new();
+
+        for name in regex.capture_names() {
+            if let Some(n) = name {
+                if n == "_" {
+                    continue;
+                }
+
+                if let Some(m) = captures.name(n) {
+                    scope.set(n.to_string(), m.as_str().to_string())
                 }
             }
         }

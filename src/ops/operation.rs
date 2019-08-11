@@ -56,9 +56,27 @@ impl Operation for ast::Statement {
                     _ => return
                 };
 
-                env.push(Scope::from_regex(regex, &line));
-                env.event = Event::Line(regex.replace(&line, |_: &Captures| s.to_value(env)).into_owned());
-                env.pop();
+                env.event = Event::Line(regex.replace(&line, |caps: &Captures|  {
+                    env.push(Scope::from_captures(regex, caps));
+                    let result = s.to_value(env);
+                    env.pop();
+                    result
+                }).into_owned());
+            }
+
+            ast::Statement::Gsubst(regex, s) => {
+                let line = match &env.event {
+                    Event::Line(line) => line.to_string(),
+                    _ => return
+                };
+
+                env.event = Event::Line(regex.replace_all(&line, |caps: &Captures| { 
+                    env.push(Scope::from_captures(regex, caps));
+                    let result = s.to_value(env);
+                    env.pop();
+
+                    result
+                }).into_owned());
             }
         }
     }
