@@ -52,7 +52,15 @@ fn capture() {
 fn symbolic_anchors() {
     assert_eq!(
         run_interpreter!(
-            "^ { print 'first'  }; // { print _ }; $ { print 'last'  }",
+            "^ { print 'first' }; // { print _ }; $ { print 'last'  }",
+            "middle"
+        ),
+        "first\nmiddle\nlast\n".to_string()
+    );
+
+    assert_eq!(
+        run_interpreter!(
+            "^ { print 'first' }; print _; $ { print 'last'  }",
             "middle"
         ),
         "first\nmiddle\nlast\n".to_string()

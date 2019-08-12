@@ -1,5 +1,6 @@
 use super::*;
 use crate::ast;
+use crate::ops::lifecycle::Lifecycle;
 use regex::Captures;
 use std::io::Write;
 use std::process::Command;
@@ -15,7 +16,9 @@ impl Operation for ast::Seq {
         }
 
         for sub in &self.subnodes {
-            sub.perform(env)
+            if !self.toplevel || env.event.is_lifecycle() == sub.is_lifecycle() {
+                sub.perform(env)
+            }
         }
     }
 }

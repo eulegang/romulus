@@ -5,6 +5,7 @@ mod range_cap;
 mod scope_provider;
 mod selector;
 mod valuable;
+mod lifecycle;
 
 pub use operation::*;
 pub use range_cap::*;

@@ -4,7 +4,7 @@ use crate::lex::Token;
 /// Parses a romulus token stream and creates a romulus AST,
 /// or returns an error message
 pub fn parse(tokens: Vec<Token>) -> Result<Seq, String> {
-    let (node, offset) = Seq::parse(&tokens, 0)?;
+    let (node, offset) = Seq::parse_toplevel(&tokens, 0)?;
 
     if offset != tokens.len() {
         return Err("Did not consume the whole program".to_string());
@@ -34,6 +34,7 @@ impl Parsable for Seq {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Seq, usize), String> {
         let mut subnodes = Vec::new();
         let mut cur = pos;
+        let toplevel = false;
 
         while cur != tokens.len() {
             let (body_node, next) = Body::parse(&tokens, cur)?;
@@ -41,7 +42,23 @@ impl Parsable for Seq {
             subnodes.push(body_node);
         }
 
-        Ok((Seq { subnodes }, cur))
+        Ok((Seq { subnodes, toplevel }, cur))
+    }
+}
+
+impl Seq {
+    fn parse_toplevel(tokens: &[Token], pos: usize) -> Result<(Seq, usize), String> {
+        let mut subnodes = Vec::new();
+        let mut cur = pos;
+        let toplevel = true;
+
+        while cur != tokens.len() {
+            let (body_node, next) = Body::parse(&tokens, cur)?;
+            cur = next;
+            subnodes.push(body_node);
+        }
+
+        Ok((Seq { subnodes, toplevel }, cur))
     }
 }
 
@@ -69,7 +86,7 @@ impl Parsable for Body {
                 ));
             }
 
-            Ok((Body::Guard(sel, Seq { subnodes }), current + 1))
+            Ok((Body::Guard(sel, Seq { subnodes, toplevel: false }), current + 1))
         } else {
             let (node, next) = Statement::parse(&tokens, pos)?;
             Ok((Body::Bare(node), next))
@@ -323,6 +340,18 @@ mod parse_tests {
     use crate::lex::lex;
 
     macro_rules! seq {
+        (tl $($ast: expr),*) => {
+            {
+                let mut subnodes = Vec::new();
+
+                $(
+                    subnodes.push($ast);
+                )*
+
+                Seq { subnodes, toplevel: true }
+            }
+        };
+
         ($($ast: expr),*) => {
             {
                 let mut subnodes = Vec::new();
@@ -331,7 +360,7 @@ mod parse_tests {
                     subnodes.push($ast);
                 )*
 
-                Seq { subnodes }
+                Seq { subnodes, toplevel: false }
             }
         }
     }
@@ -382,7 +411,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![Body::Guard(
+            Ok(seq![tl Body::Guard(
                 selector![m rmatch!("needle")],
                 seq![Body::Bare(Statement::Print(quote![s"found it"]))]
             )])
@@ -398,7 +427,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![Body::Bare(Statement::Print(quote![s"found it"]))])
+            Ok(seq![tl Body::Bare(Statement::Print(quote![s"found it"]))])
         );
     }
 
@@ -411,7 +440,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![Body::Guard(
+            Ok(seq![tl Body::Guard(
                 selector![-rmatch!("a"), rmatch!("b")],
                 seq![Body::Bare(Statement::Print(id!("_")))]
             )])
@@ -427,7 +456,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![Body::Guard(
+            Ok(seq![tl Body::Guard(
                 selector![m rmatch!("Type: (?P<type>.*)")],
                 seq![Body::Bare(Statement::Print(id!("type")))]
             )])
@@ -443,7 +472,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![Body::Guard(
+            Ok(seq![tl Body::Guard(
                 selector![
                     Pattern::String("<none>".to_string(), false),
                     Pattern::Identifier("_".to_string()),
@@ -463,7 +492,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(Pattern::String("DONE".to_string(), false)),
                     seq![Body::Bare(Statement::Quit)]
@@ -485,7 +514,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Subst(Box::new(Regex::new("that").unwrap()), quote!(s"other")))]
@@ -503,7 +532,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Gsubst(Box::new(Regex::new("that").unwrap()), quote!(s"other")))]
@@ -521,7 +550,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Read(quote!(s"somefile.txt")))]
@@ -539,7 +568,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Write(quote!(s"somefile.txt")))]
@@ -557,7 +586,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Exec(quote!("echo ${_}")))]
@@ -575,7 +604,7 @@ mod parse_tests {
 
         assert_eq!(
             parse(tokens),
-            Ok(seq![
+            Ok(seq![tl
                 Body::Single(
                     selector!(m rmatch!("thing")),
                     Statement::Exec(quote!("echo ${_}"))

@@ -171,6 +171,7 @@ pub enum Body {
 #[derive(Debug, PartialEq)]
 pub struct Seq {
     pub subnodes: Vec<Body>,
+    pub(crate) toplevel: bool,
 }
 
 impl PartialEq for Match {
