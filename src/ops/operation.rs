@@ -2,8 +2,8 @@ use super::*;
 use crate::ast;
 use crate::ops::lifecycle::Lifecycle;
 use regex::Captures;
-use std::io::Write;
-use std::process::Command;
+use std::io::{Write, copy};
+use std::process::{Command, Stdio};
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
@@ -100,7 +100,7 @@ impl Operation for ast::Statement {
                     }
                 };
 
-                match std::io::copy(&mut file, env.out) {
+                match copy(&mut file, env.out) {
                     Ok(_) => (),
                     Err(msg) => {
                         eprintln!("Error cating file {}", msg);
@@ -132,16 +132,20 @@ impl Operation for ast::Statement {
             }
 
             ast::Statement::Exec(expr) => {
-                match Command::new("sh")
+                let r_child = Command::new("sh")
                     .arg("-c")
                     .arg(expr.to_value(env))
-                    .spawn() {
+                    .stdout(Stdio::piped())
+                    .spawn();
+
+
+                match r_child {
                     Err(msg) => {
                         eprintln!("unable to execute: {}", msg);
                     }
 
-                    Ok(mut child) => {
-                        let _ = child.wait();
+                    Ok(child) => {
+                        let _ = copy(&mut child.stdout.unwrap(), env.out);
                     }
                 };
             }

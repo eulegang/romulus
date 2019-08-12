@@ -130,3 +130,15 @@ fn single() {
         "first\nmiddle\nlast\n".to_string()
     );
 }
+
+#[test]
+fn exec() {
+    // echo should exist on every platform
+    assert_eq!(
+        run_interpreter!(
+            "^ exec 'echo first'\n// exec \"echo ${_}\"\n$ exec 'echo last'\n",
+            "middle"
+        ),
+        "first\nmiddle\nlast\n".to_string()
+    );
+}
