@@ -254,6 +254,10 @@ impl Parsable for Statement {
                 (Statement::Read(expr), p)
             }
 
+            "write" => {
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Write(expr), p)
+            }
 
             _ => {
                 return Err(format!(
@@ -514,6 +518,24 @@ mod parse_tests {
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Read(quote!(s"somefile.txt")))]
+                )
+            ])
+        );
+    }
+
+    #[test]
+    fn parse_statement_write() {
+        let tokens = match lex("/thing/ { write 'somefile.txt' }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![
+                Body::Guard(
+                    selector!(m rmatch!("thing")),
+                    seq![Body::Bare(Statement::Write(quote!(s"somefile.txt")))]
                 )
             ])
         );

@@ -1,6 +1,7 @@
 use super::*;
 use crate::ast;
 use regex::Captures;
+use std::io::Write;
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
@@ -94,6 +95,31 @@ impl Operation for ast::Statement {
                         eprintln!("Error cating file {}", msg);
                     }
                 }
+            }
+
+            ast::Statement::Write(expr) => {
+                if let Event::Line(line) = &env.event {
+                    let mut file = match std::fs::OpenOptions::new()
+                        .write(true)
+                        .append(true)
+                        .create(true).open(expr.to_value(env)) {
+                            Ok(f) => f,
+                            Err(msg) => {
+                                eprintln!("Error oppening file {}", msg);
+                                return;
+                            }
+                        };
+
+                    match writeln!(file, "{}", line) {
+                        Ok(_) => (),
+                        Err(msg) => {
+                            eprintln!("Error writing to file {}", msg);
+                            return;
+                        }
+                    }
+                }
+                        
+
             }
         }
     }
