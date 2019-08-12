@@ -259,6 +259,11 @@ impl Parsable for Statement {
                 (Statement::Write(expr), p)
             }
 
+            "exec" => {
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Exec(expr), p)
+            }
+
             _ => {
                 return Err(format!(
                     "expected a valid statement but received invalid one {:?}",
@@ -536,6 +541,24 @@ mod parse_tests {
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Write(quote!(s"somefile.txt")))]
+                )
+            ])
+        );
+    }
+
+    #[test]
+    fn parse_statement_execute() {
+        let tokens = match lex("/thing/ { exec \"echo ${_}\" }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![
+                Body::Guard(
+                    selector!(m rmatch!("thing")),
+                    seq![Body::Bare(Statement::Exec(quote!("echo ${_}")))]
                 )
             ])
         );

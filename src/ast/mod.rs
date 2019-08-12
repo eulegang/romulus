@@ -156,6 +156,7 @@ pub enum Statement {
     Gsubst(Box<Regex>, Expression),
     Read(Expression),
     Write(Expression),
+    Exec(Expression),
 }
 
 /// A guarded statement or a plain one
@@ -206,6 +207,7 @@ impl PartialEq for Statement {
                 sr.to_string() == or.to_string() && se == oe,
             (Statement::Read(se), Statement::Read(oe)) => se == oe,
             (Statement::Write(se), Statement::Write(oe)) => se == oe,
+            (Statement::Exec(se), Statement::Exec(oe)) => se == oe,
             _ => false
         }
     }

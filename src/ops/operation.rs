@@ -2,6 +2,7 @@ use super::*;
 use crate::ast;
 use regex::Captures;
 use std::io::Write;
+use std::process::Command;
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
@@ -118,8 +119,21 @@ impl Operation for ast::Statement {
                         }
                     }
                 }
-                        
+            }
 
+            ast::Statement::Exec(expr) => {
+                match Command::new("sh")
+                    .arg("-c")
+                    .arg(expr.to_value(env))
+                    .spawn() {
+                    Err(msg) => {
+                        eprintln!("unable to execute: {}", msg);
+                    }
+
+                    Ok(mut child) => {
+                        let _ = child.wait();
+                    }
+                };
             }
         }
     }
