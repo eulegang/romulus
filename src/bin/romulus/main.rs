@@ -3,6 +3,7 @@ extern crate clap;
 
 extern crate tempfile;
 
+#[macro_use(nl)]
 extern crate romulus;
 
 extern crate regex;
@@ -78,7 +79,7 @@ fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     let sep = match Regex::new(matches.value_of("sep").unwrap()) {
         Ok(regex) => regex,
         Err(msg) => {
-            eprintln!("Error parsing sep: {}", msg);
+            eprint!("Error parsing sep: {}{}", msg, nl!());
             process::exit(1);
         }
     };
@@ -103,7 +104,7 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         let fin = match File::open(&input) {
             Ok(f) => f,
             Err(err) => {
-                eprintln!("unable to read file '{}': {}", input, err);
+                eprint!("unable to read file '{}': {}{}", input, err, nl!());
                 process::exit(1);
             }
         };
@@ -111,7 +112,7 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         let mut fout = match tempfile::NamedTempFile::new() {
             Ok(f) => f,
             Err(err) => {
-                eprintln!("unable to create temp file {}", err);
+                eprint!("unable to create temp file {}{}", err, nl!());
                 process::exit(1);
             }
         };
@@ -121,13 +122,13 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         if ext != "" {
             if let Err(err) = fs::rename(&input, format!("{}.{}", input, ext)) {
                 drop(fout);
-                eprintln!("unable to rename {}.{} -> {}: {}", input, ext, input, err);
+                eprint!("unable to rename {}.{} -> {}: {}{}", input, ext, input, err, nl!());
                 process::exit(1);
             }
         }
 
         if let Err(err) = fout.persist(input) {
-            eprintln!("unable to replace {}: {}", input, err);
+            eprint!("unable to replace {}: {}{}", input, err, nl!());
             process::exit(1);
         };
     }
@@ -138,7 +139,7 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
         Some(filename) => match File::create(filename) {
             Ok(f) => Box::new(f),
             Err(_) => {
-                eprintln!("Unable to create {}", filename);
+                eprint!("Unable to create {}{}", filename, nl!());
                 process::exit(1);
             }
         },
@@ -151,7 +152,7 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
             let file = match File::open(input) {
                 Ok(f) => f,
                 Err(_) => {
-                    eprintln!("Unable to read {}", input);
+                    eprint!("Unable to read {}{}", input, nl!());
                     process::exit(1);
                 }
             };
@@ -171,7 +172,7 @@ fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
     match result {
         Ok(t) => t,
         Err(msg) => {
-            eprintln!("{}", msg);
+            eprint!("{}{}", msg, nl!());
             process::exit(1);
         }
     }

@@ -16,6 +16,17 @@
 
 #![allow(clippy::new_without_default)]
 
+#[macro_export]
+macro_rules! nl {
+    () => {
+        if cfg!(not(target_os = "windows")) {
+            "\n"
+        } else {
+            "\r\n"
+        }
+    }
+}
+
 #[macro_use]
 extern crate lazy_static;
 

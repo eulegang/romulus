@@ -5,6 +5,7 @@ use regex::Captures;
 use std::io::{Write, copy};
 use std::process::{Command, Stdio};
 
+
 pub trait Operation {
     fn perform(&self, env: &mut Environment);
 }
@@ -57,7 +58,7 @@ impl Operation for ast::Statement {
 
         match self {
             ast::Statement::Print(expr) => {
-                let _ = writeln!(env.out, "{}", expr.to_value(env));
+                let _ = write!(env.out, "{}{}", expr.to_value(env), nl!());
             }
 
             ast::Statement::Quit => env.quit = true,
@@ -95,7 +96,7 @@ impl Operation for ast::Statement {
                 let mut file = match std::fs::File::open(expr.to_value(env)) {
                     Ok(f) => f,
                     Err(msg) => {
-                        eprintln!("Error open file {}", msg);
+                        eprint!("Error open file {}{}", msg, nl!());
                         return
                     }
                 };
@@ -103,7 +104,7 @@ impl Operation for ast::Statement {
                 match copy(&mut file, env.out) {
                     Ok(_) => (),
                     Err(msg) => {
-                        eprintln!("Error cating file {}", msg);
+                        eprint!("Error cating file {}{}", msg, nl!());
                     }
                 }
             }
@@ -116,15 +117,15 @@ impl Operation for ast::Statement {
                         .create(true).open(expr.to_value(env)) {
                             Ok(f) => f,
                             Err(msg) => {
-                                eprintln!("Error oppening file {}", msg);
+                                eprint!("Error oppening file {}{}", msg, nl!());
                                 return;
                             }
                         };
 
-                    match writeln!(file, "{}", line) {
+                    match write!(file, "{}{}", line, nl!()) {
                         Ok(_) => (),
                         Err(msg) => {
-                            eprintln!("Error writing to file {}", msg);
+                            eprint!("Error writing to file {}{}", msg, nl!());
                             return;
                         }
                     }
@@ -149,7 +150,7 @@ impl Operation for ast::Statement {
 
                 match r_child {
                     Err(msg) => {
-                        eprintln!("unable to execute: {}", msg);
+                        eprint!("unable to execute: {}{}", msg, nl!());
                     }
 
                     Ok(child) => {
