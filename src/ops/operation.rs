@@ -132,11 +132,19 @@ impl Operation for ast::Statement {
             }
 
             ast::Statement::Exec(expr) => {
-                let r_child = Command::new("sh")
+                let r_child = if cfg!(not(target_os = "windows")) {
+                    Command::new("sh")
                     .arg("-c")
                     .arg(expr.to_value(env))
                     .stdout(Stdio::piped())
-                    .spawn();
+                    .spawn()
+                } else {
+                    Command::new("cmd")
+                    .arg("/C")
+                    .arg(expr.to_value(env))
+                    .stdout(Stdio::piped())
+                    .spawn()
+                };
 
 
                 match r_child {
