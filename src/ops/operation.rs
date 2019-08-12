@@ -28,6 +28,13 @@ impl Operation for ast::Body {
 
         match self {
             ast::Body::Bare(func_node) => func_node.perform(env),
+            ast::Body::Single(sel_node, node) => {
+                if sel_node.select(env) {
+                    env.push(sel_node.scope(env));
+                    node.perform(env);
+                    env.pop();
+                }
+            }
             ast::Body::Guard(sel_node, node) => {
                 if sel_node.select(env) {
                     env.push(sel_node.scope(env));

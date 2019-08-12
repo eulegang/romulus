@@ -111,3 +111,14 @@ fn gsubst() {
         "ping x; ping yz; ping xyz\n"
     );
 }
+
+#[test]
+fn single() {
+    assert_eq!(
+        run_interpreter!(
+            "^ print 'first'\n// print _\n$ print 'last'\n",
+            "middle"
+        ),
+        "first\nmiddle\nlast\n".to_string()
+    );
+}

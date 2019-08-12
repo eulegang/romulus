@@ -22,6 +22,7 @@ impl RangeCap for ast::Body {
     fn num_ranges(&self) -> usize {
         match self {
             ast::Body::Bare(_) => 0,
+            ast::Body::Single(sel, _) => sel.num_ranges(),
             ast::Body::Guard(sel, node) => sel.num_ranges() + node.num_ranges(),
         }
     }

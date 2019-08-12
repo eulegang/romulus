@@ -163,6 +163,7 @@ pub enum Statement {
 #[derive(Debug, PartialEq)]
 pub enum Body {
     Bare(Statement),
+    Single(Selector, Statement),
     Guard(Selector, Seq),
 }
 

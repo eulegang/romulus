@@ -49,7 +49,9 @@ impl Parsable for Body {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Body, usize), String> {
         if let Some((sel, cur)) = Selector::try_parse(&tokens, pos) {
             if Some(&Token::Paren('{')) != tokens.get(cur) {
-                return Err(format!("expected {{ but received: {:?}", tokens.get(cur)));
+                let (statement, done) = Statement::parse(tokens, cur)?;
+
+                return Ok((Body::Single(sel, statement), done))
             }
 
             let mut current = cur + 1;
@@ -559,6 +561,24 @@ mod parse_tests {
                 Body::Guard(
                     selector!(m rmatch!("thing")),
                     seq![Body::Bare(Statement::Exec(quote!("echo ${_}")))]
+                )
+            ])
+        );
+    }
+
+    #[test]
+    fn parse_single() {
+        let tokens = match lex("/thing/ exec \"echo ${_}\"") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![
+                Body::Single(
+                    selector!(m rmatch!("thing")),
+                    Statement::Exec(quote!("echo ${_}"))
                 )
             ])
         );
