@@ -2,6 +2,7 @@
 extern crate clap;
 
 extern crate tempfile;
+extern crate atty;
 
 #[macro_use(nl)]
 extern crate romulus;
@@ -173,6 +174,13 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
             interpreter.process(&mut BufReader::new(file), &mut output);
         }
     } else {
+        if cfg!(not(feature = "stdin-tty")) {
+            if atty::is(atty::Stream::Stdin) {
+                eprintln!("Stdin is a tty refusing to process");
+                process::exit(1)
+            }
+        }
+
         let sin = stdin();
         let mut sin_lock = sin.lock();
 
