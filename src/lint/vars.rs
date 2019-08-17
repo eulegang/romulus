@@ -33,7 +33,7 @@ impl Vars {
         results
     }
 
-    fn lint_check(&self, vars: &Vec<Vec<String>>, needed: Vec<String>) -> Vec<String> {
+    fn lint_check(&self, vars: &[Vec<String>], needed: Vec<String>) -> Vec<String> {
         let mut violations = Vec::new();
 
         for consumed in needed {
@@ -69,7 +69,7 @@ impl Lint for Vars {
 
         violations
             .iter()
-            .map(format_message)
+            .map(|var: &String| format_message(var))
             .collect()
     }
 }
@@ -182,11 +182,11 @@ fn env_vars() -> Vec<String> {
 }
 
 #[cfg(feature = "color")]
-fn format_message(variable: &String) -> LintMessage {
+fn format_message(variable: &str) -> LintMessage {
     LintMessage(format!("Undefined variable {}", ansi_term::Style::new().bold().paint(variable)))
 }
 
 #[cfg(not(feature = "color"))]
-fn format_message(variable: &String) -> LintMessage {
+fn format_message(variable: &str) -> LintMessage {
     LintMessage(format!("Undefined variable {}", variable))
 }
