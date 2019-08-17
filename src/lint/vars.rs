@@ -60,6 +60,10 @@ impl Lint for Vars {
 
         vars.push(vec!["_".to_string()]);
 
+        if cfg!(feature = "envvar") {
+            vars.push(env_vars());
+        }
+
         let mut violations = self.lint_vars(node, &mut vars);
         violations.dedup();
 
@@ -167,6 +171,14 @@ impl ScopeConsumer for Expression {
             }
         }
     }
+}
+
+fn env_vars() -> Vec<String> {
+    let mut vars = Vec::new();
+    for (key, _) in std::env::vars() {
+        vars.push(key)
+    }
+    vars
 }
 
 #[cfg(feature = "color")]
