@@ -51,6 +51,11 @@ fn main() {
                 .help("inplace replacement backup extension"),
         )
         .arg(
+            Arg::with_name("features")
+                .long("features")
+                .help("prints which features are enabled")
+        )
+        .arg(
             Arg::with_name("sep")
                 .short("s")
                 .long("sep")
@@ -71,12 +76,17 @@ fn main() {
         )
         .group(
             ArgGroup::with_name("program")
-                .args(&["file", "expr"])
+                .args(&["file", "expr", "features"])
                 .required(true),
         )
         .group(ArgGroup::with_name("output_flow").args(&["output", "inplace"]))
         .arg(Arg::with_name("inputs").min_values(1))
         .get_matches();
+
+    if matches.is_present("features") {
+        print_features();
+        process::exit(0);
+    }
 
     let interpreter = create_interpreter(&matches);
 
@@ -221,5 +231,13 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
         }
 
         _ => unreachable!(),
+    }
+}
+
+fn print_features() {
+    for (enabled, feature) in romulus::features::features() {
+        let repr = if enabled { "+" }  else { "-" };
+
+        println!("{}{}", repr, feature);
     }
 }
