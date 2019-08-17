@@ -36,5 +36,6 @@ mod ops;
 pub mod ast;
 pub mod lex;
 pub mod runtime;
+pub mod lint;
 
 pub use interpreter::Interpreter;

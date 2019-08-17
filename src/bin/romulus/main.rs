@@ -58,6 +58,16 @@ fn main() {
                 .default_value(" +")
                 .help("sepeartes patterns in a line"),
         )
+        .arg(
+            Arg::with_name("lint")
+                .short("l")
+                .long("lint")
+                .env("RLINT")
+                .takes_value(true)
+                .possible_values(&["off", "warn", "strict"])
+                .default_value("warn")
+                .help("selects the behavior of linting")
+        )
         .group(
             ArgGroup::with_name("program")
                 .args(&["file", "expr"])
@@ -68,6 +78,9 @@ fn main() {
         .get_matches();
 
     let interpreter = create_interpreter(&matches);
+
+    lint(&interpreter, &matches);
+
     if let Some(ext) = matches.value_of("inplace") {
         process_inplace(interpreter, ext, &mut matches.values_of("inputs").unwrap())
     } else {
@@ -175,5 +188,30 @@ fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
             eprint!("{}{}", msg, nl!());
             process::exit(1);
         }
+    }
+}
+
+fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
+    match matches.value_of("lint") {
+        Some("off") => (),
+        Some("warn") => {
+            for msg in interpreter.lint() {
+                eprintln!("{}", msg);
+            }
+        }
+
+        Some("strict") => {
+            let msgs = interpreter.lint();
+
+            for msg in &msgs {
+                eprintln!("{}", msg);
+            }
+
+            if msgs.len() != 0 {
+                process::exit(1)
+            }
+        }
+
+        _ => unreachable!(),
     }
 }

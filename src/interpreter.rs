@@ -1,6 +1,6 @@
 use crate::ops::Operation;
 use crate::runtime::{Environment, Event, Scope};
-use crate::{ast, lex};
+use crate::{ast, lex, lint};
 
 use regex::Regex;
 use std::fs::File;
@@ -66,5 +66,10 @@ impl Interpreter {
         env.event = Event::End;
         self.node.perform(&mut env);
         env.tracker.reset();
+    }
+
+    /// Lint the current program
+    pub fn lint(&self) -> Vec<String> {
+        lint::lint(&self.node)
     }
 }

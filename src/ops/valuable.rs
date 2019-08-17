@@ -10,6 +10,18 @@ lazy_static! {
     static ref INTERPOLATOR: Regex = Regex::new(r"\$\{(?P<name>[a-zA-Z0-9_]+)\}").unwrap();
 }
 
+// Not really a good other place for this imo
+pub fn interpolated_variables(s: &str) -> Vec<String> {
+    let mut names = Vec::new();
+
+    for caps in INTERPOLATOR.captures_iter(s) {
+        names.push(caps["name"].to_string())
+    }
+
+    names
+}
+
+
 impl Valuable for Expression {
     fn to_value(&self, env: &Environment) -> String {
         match self {
