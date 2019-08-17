@@ -1,5 +1,5 @@
 use crate::ops::Operation;
-use crate::runtime::{Environment, Event};
+use crate::runtime::{Environment, Event, Scope};
 use crate::{ast, lex};
 
 use regex::Regex;
@@ -42,6 +42,10 @@ impl Interpreter {
     pub fn process<R: BufRead, W: Write>(&self, sin: &mut R, sout: &mut W) {
         let mut iter = sin.lines();
         let mut env = Environment::new(sout, &self.node, self.sep.clone());
+
+        if cfg!(feature = "envvar") {
+            env.push(Scope::env());
+        }
 
         env.event = Event::Begin;
         self.node.perform(&mut env);

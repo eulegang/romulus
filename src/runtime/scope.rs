@@ -74,3 +74,16 @@ impl AddAssign for Scope {
         }
     }
 }
+
+impl Scope {
+    /// Generate a scope from os environmental variables
+    pub fn env() -> Scope {
+        let mut scope = Scope::new();
+
+        for (key, value) in std::env::vars() {
+            scope.set(key, value);
+        }
+
+        scope
+    }
+}
