@@ -69,7 +69,7 @@ impl Interpreter {
     }
 
     /// Lint the current program
-    pub fn lint(&self) -> Vec<String> {
+    pub fn lint(&self) -> Vec<lint::LintMessage> {
         lint::lint(&self.node)
     }
 }

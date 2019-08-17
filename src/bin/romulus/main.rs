@@ -3,6 +3,7 @@ extern crate clap;
 
 extern crate tempfile;
 extern crate atty;
+extern crate ansi_term;
 
 #[macro_use(nl)]
 extern crate romulus;
@@ -16,6 +17,17 @@ use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
+use ansi_term::Colour::*;
+
+macro_rules! color {
+    ($color: expr, $msg: expr) => {
+        if cfg!(feature = "color") {
+            $color.paint($msg.to_string()).to_string()
+        } else {
+            $msg.to_string()
+        }
+    }
+}
 
 fn main() {
     let matches = App::new("romulus")
@@ -186,7 +198,7 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
     } else {
         if cfg!(not(feature = "stdin-tty")) {
             if atty::is(atty::Stream::Stdin) {
-                eprintln!("Stdin is a tty refusing to process");
+                eprint!("{}{}", color!(Red, "Stdin is a tty refusing to process"), nl!());
                 process::exit(1)
             }
         }
@@ -214,7 +226,7 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
         Some("off") => (),
         Some("warn") => {
             for msg in interpreter.lint() {
-                eprintln!("{}", msg);
+                eprint!("{}{}", color!(Yellow, msg), nl!());
             }
         }
 
@@ -222,7 +234,7 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
             let msgs = interpreter.lint();
 
             for msg in &msgs {
-                eprintln!("{}", msg);
+                eprint!("{}{}", color!(Red, &msg), nl!());
             }
 
             if msgs.len() != 0 {
@@ -237,7 +249,8 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
 fn print_features() {
     for (enabled, feature) in romulus::features::features() {
         let repr = if enabled { "+" }  else { "-" };
+        let color = if enabled { Green } else { Red };
 
-        println!("{}{}", repr, feature);
+        print!("{}{}{}", color!(color, repr), feature, nl!());
     }
 }

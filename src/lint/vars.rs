@@ -1,6 +1,7 @@
-use super::Lint;
+use super::{Lint, LintMessage};
 use crate::ast::*;
 use crate::ops::interpolated_variables;
+
 pub(super) struct Vars();
 
 impl Vars {
@@ -54,7 +55,7 @@ impl Vars {
 }
 
 impl Lint for Vars {
-    fn lint(&self, node: &Seq) -> Vec<String> {
+    fn lint(&self, node: &Seq) -> Vec<LintMessage> {
         let mut vars = Vec::new();
 
         vars.push(vec!["_".to_string()]);
@@ -64,8 +65,8 @@ impl Lint for Vars {
 
         violations
             .iter()
-            .map(|vio: &String| format!("Missing variable {}", vio))
-            .collect::<Vec<String>>()
+            .map(format_message)
+            .collect()
     }
 }
 
@@ -166,4 +167,14 @@ impl ScopeConsumer for Expression {
             }
         }
     }
+}
+
+#[cfg(feature = "color")]
+fn format_message(variable: &String) -> LintMessage {
+    LintMessage(format!("Undefined variable {}", ansi_term::Style::new().bold().paint(variable)))
+}
+
+#[cfg(not(feature = "color"))]
+fn format_message(variable: &String) -> LintMessage {
+    LintMessage(format!("Undefined variable {}", variable))
 }
