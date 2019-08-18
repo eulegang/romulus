@@ -283,6 +283,11 @@ impl Parsable for Statement {
                 (Statement::Exec(expr), p)
             }
 
+            "append" => {
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Append(expr), p)
+            }
+
             _ => {
                 return Err(format!(
                     "expected a valid statement but received invalid one {:?}",
@@ -594,6 +599,25 @@ mod parse_tests {
             ])
         );
     }
+
+    #[test]
+    fn parse_statement_append() {
+        let tokens = match lex("/backup/ { append '.bak' }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![tl
+                Body::Guard(
+                    selector!(m rmatch!("backup")),
+                    seq![Body::Bare(Statement::Append(quote!(s".bak")))]
+                )
+            ])
+        );
+    }
+
 
     #[test]
     fn parse_single() {

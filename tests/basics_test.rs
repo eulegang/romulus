@@ -126,3 +126,12 @@ fn exec() {
         "first\nmiddle\nlast\n"
     );
 }
+
+#[test]
+fn append() {
+    check_output!(
+        "/blarg/ append(' blarg blarg') print _",
+        "ping\nblarg\n",
+        "ping\nblarg blarg blarg\n"
+    )
+}

@@ -157,6 +157,9 @@ pub enum Statement {
     Read(Expression),
     Write(Expression),
     Exec(Expression),
+
+    /// Appends the value of the expression to the line
+    Append(Expression),
 }
 
 /// A guarded statement or a plain one
@@ -210,6 +213,7 @@ impl PartialEq for Statement {
             (Statement::Read(se), Statement::Read(oe)) => se == oe,
             (Statement::Write(se), Statement::Write(oe)) => se == oe,
             (Statement::Exec(se), Statement::Exec(oe)) => se == oe,
+            (Statement::Append(se), Statement::Append(oe)) => se == oe,
             _ => false
         }
     }

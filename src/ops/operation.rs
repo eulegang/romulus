@@ -158,6 +158,12 @@ impl Operation for ast::Statement {
                     }
                 };
             }
+
+            ast::Statement::Append(expr) => {
+                if let Event::Line(line) = &env.event {
+                    env.event = Event::Line(format!("{}{}", line, expr.to_value(&env)));
+                }
+            }
         }
     }
 }

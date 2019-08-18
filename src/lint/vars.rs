@@ -155,6 +155,7 @@ impl ScopeConsumer for Statement {
             Read(expr) => expr.consumes(),
             Write(expr) => expr.consumes(),
             Exec(expr) => expr.consumes(),
+            Append(expr) => expr.consumes(),
         }
     }
 }
