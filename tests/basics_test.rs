@@ -135,3 +135,12 @@ fn append() {
         "ping\nblarg blarg blarg\n"
     )
 }
+
+#[test]
+fn set() {
+    check_output!(
+        "/set (?P<name>[^ ]+) (?P<val>.*)/ set \"${name} = ${val}\" print _",
+        "set x 123\nget x\n",
+        "x = 123\nget x\n"
+    )
+}

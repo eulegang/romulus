@@ -167,6 +167,12 @@ impl Operation for ast::Statement {
                     env.event = Line(format!("{}{}", line, expr.to_value(&env)));
                 }
             }
+
+            Set(expr) => {
+                if let Line(_) = &env.event {
+                    env.event = Line(expr.to_value(&env));
+                }
+            }
         }
     }
 }

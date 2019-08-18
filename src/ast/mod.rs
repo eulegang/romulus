@@ -160,6 +160,9 @@ pub enum Statement {
 
     /// Appends the value of the expression to the line
     Append(Expression),
+
+    /// Sets the current line to an expression
+    Set(Expression),
 }
 
 /// A guarded statement or a plain one
@@ -214,6 +217,7 @@ impl PartialEq for Statement {
             (Statement::Write(se), Statement::Write(oe)) => se == oe,
             (Statement::Exec(se), Statement::Exec(oe)) => se == oe,
             (Statement::Append(se), Statement::Append(oe)) => se == oe,
+            (Statement::Set(se), Statement::Set(oe)) => se == oe,
             _ => false
         }
     }

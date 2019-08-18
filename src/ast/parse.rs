@@ -288,6 +288,11 @@ impl Parsable for Statement {
                 (Statement::Append(expr), p)
             }
 
+            "set" => {
+                let (expr, p) = Expression::parse(tokens, param_pos)?;
+                (Statement::Set(expr), p)
+            }
+
             _ => {
                 return Err(format!(
                     "expected a valid statement but received invalid one {:?}",
@@ -617,6 +622,25 @@ mod parse_tests {
             ])
         );
     }
+
+    #[test]
+    fn parse_statement_set() {
+        let tokens = match lex("/backup/ { set '.bak' }") {
+            Ok(tokens) => tokens,
+            Err(msg) => panic!(msg),
+        };
+
+        assert_eq!(
+            parse(tokens),
+            Ok(seq![tl
+                Body::Guard(
+                    selector!(m rmatch!("backup")),
+                    seq![Body::Bare(Statement::Set(quote!(s".bak")))]
+                )
+            ])
+        );
+    }
+
 
 
     #[test]
