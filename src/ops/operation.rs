@@ -52,24 +52,27 @@ impl Operation for ast::Body {
 
 impl Operation for ast::Statement {
     fn perform(&self, env: &mut Environment) {
+        use ast::Statement::*;
+        use Event::*;
+
         if env.quit {
             return;
         }
 
         match self {
-            ast::Statement::Print(expr) => {
+            Print(expr) => {
                 let _ = write!(env.out, "{}{}", expr.to_value(env), nl!());
             }
 
-            ast::Statement::Quit => env.quit = true,
+            Quit => env.quit = true,
 
-            ast::Statement::Subst(regex, s) => {
+            Subst(regex, s) => {
                 let line = match &env.event {
-                    Event::Line(line) => line.to_string(),
+                    Line(line) => line.to_string(),
                     _ => return
                 };
 
-                env.event = Event::Line(regex.replace(&line, |caps: &Captures|  {
+                env.event = Line(regex.replace(&line, |caps: &Captures|  {
                     env.push(Scope::from_captures(regex, caps));
                     let result = s.to_value(env);
                     env.pop();
@@ -77,13 +80,13 @@ impl Operation for ast::Statement {
                 }).into_owned());
             }
 
-            ast::Statement::Gsubst(regex, s) => {
+            Gsubst(regex, s) => {
                 let line = match &env.event {
-                    Event::Line(line) => line.to_string(),
+                    Line(line) => line.to_string(),
                     _ => return
                 };
 
-                env.event = Event::Line(regex.replace_all(&line, |caps: &Captures| { 
+                env.event = Line(regex.replace_all(&line, |caps: &Captures| { 
                     env.push(Scope::from_captures(regex, caps));
                     let result = s.to_value(env);
                     env.pop();
@@ -92,7 +95,7 @@ impl Operation for ast::Statement {
                 }).into_owned());
             }
 
-            ast::Statement::Read(expr) => {
+            Read(expr) => {
                 let mut file = match std::fs::File::open(expr.to_value(env)) {
                     Ok(f) => f,
                     Err(msg) => {
@@ -109,8 +112,8 @@ impl Operation for ast::Statement {
                 }
             }
 
-            ast::Statement::Write(expr) => {
-                if let Event::Line(line) = &env.event {
+            Write(expr) => {
+                if let Line(line) = &env.event {
                     let mut file = match std::fs::OpenOptions::new()
                         .write(true)
                         .append(true)
@@ -132,7 +135,7 @@ impl Operation for ast::Statement {
                 }
             }
 
-            ast::Statement::Exec(expr) => {
+            Exec(expr) => {
                 let r_child = if cfg!(not(target_os = "windows")) {
                     Command::new("sh")
                     .arg("-c")
@@ -159,9 +162,9 @@ impl Operation for ast::Statement {
                 };
             }
 
-            ast::Statement::Append(expr) => {
-                if let Event::Line(line) = &env.event {
-                    env.event = Event::Line(format!("{}{}", line, expr.to_value(&env)));
+            Append(expr) => {
+                if let Line(line) = &env.event {
+                    env.event = Line(format!("{}{}", line, expr.to_value(&env)));
                 }
             }
         }
