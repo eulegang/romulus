@@ -196,11 +196,9 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
             interpreter.process(&mut BufReader::new(file), &mut output);
         }
     } else {
-        if cfg!(not(feature = "stdin-tty")) {
-            if atty::is(atty::Stream::Stdin) {
-                eprint!("{}{}", color!(Red, "Stdin is a tty refusing to process"), nl!());
-                process::exit(1)
-            }
+        if cfg!(not(feature = "stdin-tty")) && atty::is(atty::Stream::Stdin) {
+            eprint!("{}{}", color!(Red, "Stdin is a tty refusing to process"), nl!());
+            process::exit(1)
         }
 
         let sin = stdin();
@@ -237,7 +235,7 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
                 eprint!("{}{}", color!(Red, &msg), nl!());
             }
 
-            if msgs.len() != 0 {
+            if !msgs.is_empty() {
                 process::exit(1)
             }
         }
