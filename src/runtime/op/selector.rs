@@ -7,10 +7,11 @@ pub trait Selector {
 
 impl Selector for ast::Selector {
     fn select(&self, env: &mut Environment) -> bool {
+        use ast::Selector::*;
         match self {
-            ast::Selector::Match(match_node) => match_node.select(env),
-            ast::Selector::Range(range_node) => range_node.select(env),
-            ast::Selector::Pattern(pattern_node) => pattern_node.select(env),
+            Match(match_node) => match_node.select(env),
+            Range(range_node) => range_node.select(env),
+            Pattern(pattern_node) => pattern_node.select(env),
         }
     }
 }
@@ -39,11 +40,13 @@ impl Selector for ast::Range {
 
 impl Selector for ast::Match {
     fn select(&self, env: &mut Environment) -> bool {
+        use ast::Match::*;
+
         match self {
-            ast::Match::Begin => env.event == Event::Begin,
-            ast::Match::End => env.event == Event::End,
-            ast::Match::Index(idx) => env.lineno == *idx,
-            ast::Match::Regex(rgx) => {
+            Begin => env.event == Event::Begin,
+            End => env.event == Event::End,
+            Index(idx) => env.lineno == *idx,
+            Regex(rgx) => {
                 if let Event::Line(line) = &env.event {
                     rgx.is_match(line)
                 } else {
@@ -56,6 +59,8 @@ impl Selector for ast::Match {
 
 impl Selector for ast::PatternMatch {
     fn select(&self, env: &mut Environment) -> bool {
+        use ast::Pattern::*;
+
         let line = match &env.event {
             Event::Line(line) => line,
             _ => return false,
@@ -69,24 +74,12 @@ impl Selector for ast::PatternMatch {
             };
 
             match pattern {
-                ast::Pattern::Identifier(_) => continue,
-                ast::Pattern::Regex(regex) => {
-                    if !regex.is_match(part) {
-                        return false;
-                    }
-                }
+                Regex(regex) if !regex.is_match(part) => return false,
+                String(s, false) if s != part => return false,
+                String(s, true) if interpolate(&s, env) != part => return false,
 
-                ast::Pattern::String(s, false) => {
-                    if s != part {
-                        return false;
-                    }
-                }
-
-                ast::Pattern::String(s, true) => {
-                    if interpolate(&s, env) != part {
-                        return false;
-                    }
-                }
+                Identifier(_) => continue,
+                _ => continue,
             };
         }
 
