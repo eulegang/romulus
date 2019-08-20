@@ -2,7 +2,7 @@ use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
 use regex::Regex;
-use std::io::Write;
+use std::io::{Write, Read, copy};
 
 /// An event to be processed
 #[derive(PartialEq)]
@@ -53,6 +53,7 @@ impl<'a> Environment<'a> {
     }
 }
 
+// Variable oriented impl
 impl<'a> Environment<'a> {
     /// Looks up a variable from the stack of scopes
     pub fn lookup(&self, key: &str) -> Option<String> {
@@ -78,5 +79,11 @@ impl<'a> Environment<'a> {
 
     pub(crate) fn pop(&mut self) {
         self.scope_stack.pop();
+    }
+}
+
+impl<'a> Environment<'a> {
+    pub(crate) fn print(&mut self, reader: &mut dyn Read) {
+        let _ = copy(reader, self.out);
     }
 }

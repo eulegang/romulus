@@ -4,7 +4,7 @@ use regex::Regex;
 use Event::*;
 
 pub fn print(expr: &Expression, env: &mut Environment) {
-    let _ = write!(env.out, "{}{}", expr.to_value(env), nl!());
+    env.print(&mut format!("{}{}", expr.to_value(env), nl!()).as_bytes());
 }
 
 pub fn quit(env: &mut Environment) {
@@ -57,12 +57,7 @@ pub fn read(expr: &Expression, env: &mut Environment) {
         }
     };
 
-    match copy(&mut file, env.out) {
-        Ok(_) => (),
-        Err(msg) => {
-            eprint!("Error cating file {}{}", msg, nl!());
-        }
-    }
+    env.print(&mut file);
 }
 
 pub fn write(expr: &Expression, env: &mut Environment) {
@@ -97,7 +92,7 @@ pub fn exec(expr: &Expression, env: &mut Environment) {
         }
 
         Ok(child) => {
-            let _ = copy(&mut child.stdout.unwrap(), env.out);
+            env.print(&mut child.stdout.unwrap());
         }
     };
 }
