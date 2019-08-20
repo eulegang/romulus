@@ -15,7 +15,7 @@ pub trait Operation {
 
 impl Operation for ast::Seq {
     fn perform(&self, env: &mut Environment) {
-        if env.quit {
+        if env.finished() {
             return;
         }
 
@@ -30,7 +30,7 @@ impl Operation for ast::Seq {
 impl Operation for ast::Body {
     fn perform(&self, env: &mut Environment) {
         use ast::Body::*;
-        if env.quit {
+        if env.finished() {
             return;
         }
 
@@ -58,7 +58,7 @@ impl Operation for ast::Statement {
     fn perform(&self, env: &mut Environment) {
         use ast::Statement::*;
 
-        if env.quit {
+        if env.finished() {
             return;
         }
 

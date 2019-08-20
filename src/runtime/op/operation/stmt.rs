@@ -8,7 +8,7 @@ pub fn print(expr: &Expression, env: &mut Environment) {
 }
 
 pub fn quit(env: &mut Environment) {
-    env.quit = true
+    env.quit()
 }
 
 pub fn subst(regex: &Regex, expr: &Expression, env: &mut Environment) {

@@ -26,14 +26,13 @@ pub struct Environment<'a> {
     /// Current event being handled
     pub event: Event,
 
-    pub(crate) quit: bool,
-
     pub(crate) seperator: Regex,
 
     pub(crate) tracker: RangeScopeTracker,
 
     scope_stack: Vec<Scope>,
     out: &'a mut dyn Write,
+    quit: bool,
 }
 
 impl<'a> Environment<'a> {
@@ -83,5 +82,13 @@ impl<'a> Environment<'a> {
 impl<'a> Environment<'a> {
     pub(crate) fn print(&mut self, reader: &mut dyn Read) {
         let _ = copy(reader, self.out);
+    }
+
+    pub(crate) fn quit(&mut self) {
+        self.quit = true
+    }
+
+    pub(crate) fn finished(&self) -> bool {
+        self.quit
     }
 }

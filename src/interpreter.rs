@@ -58,7 +58,7 @@ impl Interpreter {
             self.node.perform(&mut env);
             env.tracker.reset();
 
-            if env.quit {
+            if env.finished() {
                 return;
             }
         }
