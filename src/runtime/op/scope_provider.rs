@@ -46,28 +46,25 @@ impl ScopeProvider for ast::Match {
 
 impl ScopeProvider for ast::PatternMatch {
     fn scope(&self, env: &Environment) -> Scope {
-        let mut scope = Scope::new();
+        env.split_line(|parts| {
+            let mut scope = Scope::new();
 
-        let line = match &env.event {
-            Event::Line(line) => line,
-            _ => return scope,
-        };
+            for pattern in &self.patterns {
+                let part = match parts.next() {
+                    Some(part) => part,
+                    None => return Scope::new(),
+                };
 
-        let mut parts = env.seperator.split(&line);
-        for pattern in &self.patterns {
-            let part = match parts.next() {
-                Some(part) => part,
-                None => return Scope::new(),
-            };
-
-            match pattern {
-                ast::Pattern::Identifier(id) if id == "_" => (),
-                ast::Pattern::Identifier(id) => scope.set(id.clone(), part.to_string()),
-                ast::Pattern::String(_, _) => (),
-                ast::Pattern::Regex(rgx) => scope += Scope::from_regex(rgx, line),
+                match pattern {
+                    ast::Pattern::Identifier(id) if id == "_" => (),
+                    ast::Pattern::Identifier(id) => scope.set(id.clone(), part.to_string()),
+                    ast::Pattern::String(_, _) => (),
+                    ast::Pattern::Regex(rgx) => scope += Scope::from_regex(rgx, part),
+                }
             }
-        }
 
-        scope
+            scope
+        })
+        .unwrap_or(Scope::new())
     }
 }

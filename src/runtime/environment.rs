@@ -1,7 +1,7 @@
 use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
-use regex::Regex;
+use regex::{Regex, Split};
 use std::io::{copy, Read, Write};
 
 /// An event to be processed
@@ -26,10 +26,9 @@ pub struct Environment<'a> {
     /// Current event being handled
     pub event: Event,
 
-    pub(crate) seperator: Regex,
-
     pub(crate) tracker: RangeScopeTracker,
 
+    seperator: Regex,
     scope_stack: Vec<Scope>,
     out: &'a mut dyn Write,
     quit: bool,
@@ -50,7 +49,6 @@ impl<'a> Environment<'a> {
     }
 }
 
-// Variable oriented impl
 impl<'a> Environment<'a> {
     /// Looks up a variable from the stack of scopes
     pub fn lookup(&self, key: &str) -> Option<String> {
@@ -77,9 +75,7 @@ impl<'a> Environment<'a> {
     pub(crate) fn pop(&mut self) {
         self.scope_stack.pop();
     }
-}
 
-impl<'a> Environment<'a> {
     pub(crate) fn print(&mut self, reader: &mut dyn Read) {
         let _ = copy(reader, self.out);
     }
@@ -90,5 +86,16 @@ impl<'a> Environment<'a> {
 
     pub(crate) fn finished(&self) -> bool {
         self.quit
+    }
+
+    pub(crate) fn split_line<F, T>(&self, handle: F) -> Option<T>
+    where
+        F: Fn(&mut Split) -> T,
+    {
+        if let Event::Line(line) = &self.event {
+            Some(handle(&mut self.seperator.split(line)))
+        } else {
+            None
+        }
     }
 }

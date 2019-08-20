@@ -61,28 +61,25 @@ impl Selector for ast::PatternMatch {
     fn select(&self, env: &mut Environment) -> bool {
         use ast::Pattern::*;
 
-        let line = match &env.event {
-            Event::Line(line) => line,
-            _ => return false,
-        };
+        env.split_line(|parts| {
+            for pattern in &self.patterns {
+                let part = match parts.next() {
+                    Some(part) => part,
+                    None => return false,
+                };
 
-        let mut parts = env.seperator.split(&line);
-        for pattern in &self.patterns {
-            let part = match parts.next() {
-                Some(part) => part,
-                None => return false,
-            };
+                match pattern {
+                    Regex(regex) if !regex.is_match(part) => return false,
+                    String(s, false) if s != part => return false,
+                    String(s, true) if interpolate(&s, env) != part => return false,
 
-            match pattern {
-                Regex(regex) if !regex.is_match(part) => return false,
-                String(s, false) if s != part => return false,
-                String(s, true) if interpolate(&s, env) != part => return false,
+                    Identifier(_) => continue,
+                    _ => continue,
+                };
+            }
 
-                Identifier(_) => continue,
-                _ => continue,
-            };
-        }
-
-        true
+            true
+        })
+        .unwrap_or(false)
     }
 }
