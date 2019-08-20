@@ -5,7 +5,7 @@ extern crate tempfile;
 extern crate atty;
 extern crate ansi_term;
 
-#[macro_use(nl)]
+#[macro_use(nl, color)]
 extern crate romulus;
 
 extern crate regex;
@@ -18,16 +18,6 @@ use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
 use ansi_term::Colour::*;
-
-macro_rules! color {
-    ($color: expr, $msg: expr) => {
-        if cfg!(feature = "color") {
-            $color.paint($msg.to_string()).to_string()
-        } else {
-            $msg.to_string()
-        }
-    }
-}
 
 fn main() {
     let matches = App::new("romulus")

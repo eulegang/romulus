@@ -29,6 +29,20 @@ macro_rules! nl {
     }
 }
 
+/// A macro that expands to a colored output if romulus is compiled
+/// with color support
+#[macro_export]
+macro_rules! color {
+    ($color: expr, $msg: expr) => {
+        if cfg!(feature = "color") {
+            $color.paint($msg.to_string()).to_string()
+        } else {
+            $msg.to_string()
+        }
+    }
+}
+
+
 #[macro_use]
 extern crate lazy_static;
 
