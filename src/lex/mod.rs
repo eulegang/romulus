@@ -1,7 +1,10 @@
 //! A module which extracts romulus tokens out of string content
 
-use std::iter::Peekable;
-use std::ops::RangeInclusive;
+#[cfg(test)]
+mod tests;
+mod utils;
+
+use utils::*;
 
 ///
 /// Represents the individual grammer entity in romulus
@@ -54,21 +57,6 @@ pub enum Token {
 }
 
 impl Token {
-    #[allow(dead_code)]
-    fn typename(&self) -> String {
-        match self {
-            Token::Number(_) => "number".to_string(),
-            Token::Paren(ch) => format!("{}", ch),
-            Token::Regex(_, _) => "regex".to_string(),
-            Token::Comment(_) => "comment".to_string(),
-            Token::Identifier(_) => "identifier".to_string(),
-            Token::String(_, _) => "string".to_string(),
-            Token::Newline => "newline".to_string(),
-            Token::Comma => "comma".to_string(),
-            Token::Symbol(_) => "symbol".to_string(),
-        }
-    }
-
     fn significant(&self) -> bool {
         match self {
             Token::Number(_) => true,
@@ -84,140 +72,6 @@ impl Token {
     }
 }
 
-#[inline]
-fn chomp_range<T: Iterator<Item = char>>(
-    iter: &mut Peekable<T>,
-    accept: RangeInclusive<char>,
-) -> Vec<char> {
-    let mut accepted = Vec::new();
-
-    while let Some(ch) = &mut iter.peek() {
-        if accept.contains(&ch.clone()) {
-            accepted.push(ch.clone());
-            iter.next();
-        } else {
-            break;
-        }
-    }
-
-    accepted
-}
-
-#[inline]
-fn chomp_multi<T: Iterator<Item = char>>(
-    iter: &mut Peekable<T>,
-    chars: &[char],
-    accepts: &[RangeInclusive<char>],
-) -> Vec<char> {
-    let mut accepted = Vec::new();
-
-    'base: while let Some(ch) = &mut iter.peek() {
-        let owned = **ch;
-
-        if chars.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-            continue;
-        }
-
-        for accept in accepts {
-            if accept.contains(&owned) {
-                accepted.push(owned);
-                iter.next();
-                continue 'base;
-            }
-        }
-
-        break;
-    }
-
-    accepted
-}
-
-#[inline]
-fn chomp_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) -> Vec<char> {
-    let mut accepted = Vec::new();
-
-    while let Some(ch) = &mut iter.peek() {
-        let owned: char = **ch;
-
-        if accept.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-        } else {
-            break;
-        }
-    }
-
-    accepted
-}
-
-#[inline]
-fn chomp_until_escaped<T: Iterator<Item = char>>(
-    iter: &mut Peekable<T>,
-    terminator: char,
-    evaluates: bool,
-) -> Result<Vec<char>, String> {
-    let mut accepted: Vec<char> = Vec::new();
-
-    while let Some(ch) = &mut iter.peek() {
-        let owned: char = **ch;
-
-        if owned == '\\' {
-            iter.next();
-            match iter.next() {
-                Some('n') => accepted.push('\n'),
-                Some('\\') => accepted.push('\\'),
-                Some('t') => accepted.push('\t'),
-                Some('r') => accepted.push('\r'),
-                Some('$') if evaluates => {
-                    accepted.push('\\');
-                    accepted.push('$')
-                }
-                Some(escaped) if escaped == terminator => accepted.push(escaped),
-                Some(escaped) => return Err(format!("cannot escape {}", escaped)),
-                None => return Err(format!("found EOF when searching for {}", &terminator)),
-            }
-        } else if owned != terminator {
-            accepted.push(owned);
-            iter.next();
-        } else {
-            break;
-        }
-    }
-
-    Ok(accepted)
-}
-
-#[inline]
-fn chomp_until_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) -> Vec<char> {
-    let mut accepted: Vec<char> = Vec::new();
-
-    while let Some(ch) = &mut iter.peek() {
-        let owned: char = **ch;
-
-        if !accept.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-        } else {
-            break;
-        }
-    }
-
-    accepted
-}
-
-#[inline]
-fn get_number(vec: Vec<char>) -> i64 {
-    let mut buffer = 0;
-    for ch in vec {
-        let digit = ch.to_string().parse::<i64>().unwrap();
-
-        buffer = buffer * 10 + digit;
-    }
-
-    buffer
-}
 
 /// Lexes a given string and returns only significant tokens in
 /// a romulus program
@@ -323,87 +177,3 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     Ok(tokens)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_lex_numbers() {
-        assert_eq!(full_lex("1234"), Ok(vec![Token::Number(1234)]));
-    }
-
-    #[test]
-    fn test_lex_ignores_white_space() {
-        assert_eq!(
-            full_lex("\n \t1234 1\n\r"),
-            Ok(vec![
-                Token::Newline,
-                Token::Number(1234),
-                Token::Number(1),
-                Token::Newline
-            ])
-        );
-    }
-
-    #[test]
-    fn test_lex_context() {
-        assert_eq!(
-            full_lex("1 { }"),
-            Ok(vec![Token::Number(1), Token::Paren('{'), Token::Paren('}')])
-        );
-    }
-
-    #[test]
-    fn test_lex_regex() {
-        assert_eq!(
-            full_lex("/.*/iU"),
-            Ok(vec![Token::Regex(".*".to_string(), "iU".to_string())])
-        );
-    }
-
-    #[test]
-    fn test_lex_comment() {
-        let tokens = vec![
-            Token::Number(42),
-            Token::Comment("some comment".to_string()),
-            Token::Newline,
-            Token::Regex("test *".to_string(), "i".to_string()),
-        ];
-
-        assert_eq!(full_lex("42 #some comment\n  /test */i"), Ok(tokens));
-    }
-
-    #[test]
-    fn test_func() {
-        let tokens = vec![
-            Token::Identifier("subst".to_string()),
-            Token::Paren('('),
-            Token::Regex("(?P<name>[a-z]+):".to_string(), "".to_string()),
-            Token::Comma,
-            Token::String("Name: ${name}".to_string(), true),
-            Token::Paren(')'),
-        ];
-
-        assert_eq!(
-            full_lex("subst(/(?P<name>[a-z]+):/,\"Name: ${name}\")"),
-            Ok(tokens)
-        );
-    }
-
-    #[test]
-    fn test_removed() {
-        let tokens = vec![
-            Token::Number(42),
-            Token::Regex("test *".to_string(), "i".to_string()),
-        ];
-
-        assert_eq!(lex("42 #some comment\n  /test */i"), Ok(tokens));
-    }
-
-    #[test]
-    fn escape() {
-        let tokens = vec![Token::String("\\\n\"".to_string(), true)];
-
-        assert_eq!(lex("\"\\\\\\n\\\"\""), Ok(tokens))
-    }
-}
