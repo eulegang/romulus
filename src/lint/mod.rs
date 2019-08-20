@@ -5,14 +5,6 @@ use std::fmt;
 
 mod vars;
 
-/// A wrapper type around an error message
-#[derive(Clone, PartialEq)]
-pub struct LintMessage(String);
-
-pub(crate) trait Lint {
-    fn lint(&self, node: &Seq) -> Vec<LintMessage>;
-}
-
 /// Lints a romulus program with standard linters
 ///
 /// Current linters 
@@ -25,9 +17,17 @@ pub fn lint(node: &Seq) -> Vec<LintMessage> {
     results
 }
 
+/// A wrapper type around an error message
+#[derive(Clone, PartialEq)]
+pub struct LintMessage(String);
+
 impl fmt::Display for LintMessage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
+/// A strategy for linting a romulus program
+pub(crate) trait Linter {
+    fn lint(&self, node: &Seq) -> Vec<LintMessage>;
+}
