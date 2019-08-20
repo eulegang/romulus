@@ -80,13 +80,3 @@ impl<'a> Environment<'a> {
         self.scope_stack.pop();
     }
 }
-
-impl<'a> Write for Environment<'a> {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.out.write(buf)
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.out.flush()
-    }
-}
