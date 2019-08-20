@@ -1,3 +1,7 @@
+//! A module which detects what features romulus was compiled with.
+//!
+//! Used for runtime introspection rather then
+//! conditional compilation.
 
 macro_rules! feature {
     ($feat: expr) => {
