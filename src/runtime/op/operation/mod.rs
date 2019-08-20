@@ -3,7 +3,7 @@ use super::*;
 
 use crate::ast;
 use regex::Captures;
-use std::io::{copy, Write};
+use std::io::Write;
 use std::process::{Command, Stdio};
 
 mod stmt;

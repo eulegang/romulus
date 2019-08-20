@@ -2,7 +2,7 @@ use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
 use regex::Regex;
-use std::io::{Write, Read, copy};
+use std::io::{copy, Read, Write};
 
 /// An event to be processed
 #[derive(PartialEq)]
@@ -26,9 +26,6 @@ pub struct Environment<'a> {
     /// Current event being handled
     pub event: Event,
 
-    /// Where prints should write
-    pub out: &'a mut dyn Write,
-
     pub(crate) quit: bool,
 
     pub(crate) seperator: Regex,
@@ -36,6 +33,7 @@ pub struct Environment<'a> {
     pub(crate) tracker: RangeScopeTracker,
 
     scope_stack: Vec<Scope>,
+    out: &'a mut dyn Write,
 }
 
 impl<'a> Environment<'a> {
