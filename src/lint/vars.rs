@@ -1,6 +1,6 @@
 use super::{Lint, LintMessage};
 use crate::ast::*;
-use crate::ops::interpolated_variables;
+use crate::runtime::op::interpolated_variables;
 
 pub(super) struct Vars();
 

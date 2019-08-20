@@ -1,4 +1,4 @@
-use crate::ops::Operation;
+use crate::runtime::op::Operation;
 use crate::runtime::{Environment, Event, Scope};
 use crate::{ast, lex, lint};
 

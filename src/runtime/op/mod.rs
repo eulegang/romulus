@@ -1,4 +1,4 @@
-use crate::runtime::{Environment, Event, Scope};
+use super::{Environment, Event, Scope};
 
 mod operation;
 mod range_cap;
@@ -8,7 +8,8 @@ mod valuable;
 mod lifecycle;
 
 pub use operation::*;
-pub use range_cap::*;
 pub use scope_provider::*;
 pub use selector::*;
 pub use valuable::*;
+
+pub(crate) use range_cap::*;

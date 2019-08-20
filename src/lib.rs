@@ -31,7 +31,6 @@ macro_rules! nl {
 extern crate lazy_static;
 
 mod interpreter;
-mod ops;
 
 pub mod ast;
 pub mod lex;

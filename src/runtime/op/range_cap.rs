@@ -3,7 +3,7 @@ use crate::ast;
 //
 // Specifies how many ranges need to be kept track of
 //
-pub trait RangeCap {
+pub(crate) trait RangeCap {
     fn num_ranges(&self) -> usize;
 }
 

@@ -1,6 +1,7 @@
 use super::*;
+use super::lifecycle::Lifecycle;
+
 use crate::ast;
-use crate::ops::lifecycle::Lifecycle;
 use regex::Captures;
 use std::io::{Write, copy};
 use std::process::{Command, Stdio};

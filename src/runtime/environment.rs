@@ -1,6 +1,6 @@
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
-use crate::ops::RangeCap;
+use super::RangeCap;
 use regex::Regex;
 use std::io::Write;
 
