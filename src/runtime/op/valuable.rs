@@ -44,31 +44,7 @@ impl Valuable for Expression {
     }
 }
 
-impl Valuable for Pattern {
-    fn to_value(&self, env: &Environment) -> String {
-        match self {
-            Pattern::String(content, interpolatable) => {
-                if *interpolatable {
-                    interpolate(content, env).to_string()
-                } else {
-                    content.to_string()
-                }
-            }
-
-            Pattern::Identifier(name) => {
-                if let Some(value) = env.lookup(name) {
-                    value.to_string()
-                } else {
-                    String::new()
-                }
-            }
-
-            _ => unreachable!(),
-        }
-    }
-}
-
-fn interpolate(content: &str, env: &Environment) -> String {
+pub fn interpolate(content: &str, env: &Environment) -> String {
     let intermediary = content.replace("\\$", "\0");
     let eval = |capture: &Captures| -> String {
         let key = String::from(&capture["name"]);

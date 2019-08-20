@@ -76,8 +76,14 @@ impl Selector for ast::PatternMatch {
                     }
                 }
 
-                val @ ast::Pattern::String(_, _) => {
-                    if val.to_value(env) != part {
+                ast::Pattern::String(s, false) => {
+                    if s != part {
+                        return false;
+                    }
+                }
+
+                ast::Pattern::String(s, true) => {
+                    if interpolate(&s, env) != part {
                         return false;
                     }
                 }
