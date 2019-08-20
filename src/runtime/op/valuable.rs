@@ -21,7 +21,6 @@ pub fn interpolated_variables(s: &str) -> Vec<String> {
     names
 }
 
-
 impl Valuable for Expression {
     fn to_value(&self, env: &Environment) -> String {
         match self {

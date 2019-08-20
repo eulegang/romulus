@@ -1,4 +1,3 @@
-
 use super::*;
 use crate::lex::lex;
 
@@ -293,8 +292,6 @@ fn parse_statement_set() {
         ])
     );
 }
-
-
 
 #[test]
 fn parse_single() {

@@ -1,14 +1,13 @@
-use super::*;
 use super::lifecycle::Lifecycle;
+use super::*;
 
 use crate::ast;
 use regex::Captures;
-use std::io::{Write, copy};
+use std::io::{copy, Write};
 use std::process::{Command, Stdio};
 
 mod stmt;
 use stmt::*;
-
 
 pub trait Operation {
     fn perform(&self, env: &mut Environment);

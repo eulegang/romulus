@@ -7,13 +7,13 @@ mod vars;
 
 /// Lints a romulus program with standard linters
 ///
-/// Current linters 
+/// Current linters
 /// 1. undefined variables
 pub fn lint(node: &Seq) -> Vec<LintMessage> {
     let mut results = Vec::new();
 
     results.extend(vars::Vars().lint(&node));
-    
+
     results
 }
 

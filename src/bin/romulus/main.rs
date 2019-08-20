@@ -1,15 +1,16 @@
 #[macro_use]
 extern crate clap;
 
-extern crate tempfile;
-extern crate atty;
 extern crate ansi_term;
+extern crate atty;
+extern crate tempfile;
 
 #[macro_use(nl, color)]
 extern crate romulus;
 
 extern crate regex;
 
+use ansi_term::Colour::*;
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use regex::Regex;
 use romulus::Interpreter;
@@ -17,7 +18,6 @@ use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
-use ansi_term::Colour::*;
 
 fn main() {
     let matches = App::new("romulus")
@@ -55,7 +55,7 @@ fn main() {
         .arg(
             Arg::with_name("features")
                 .long("features")
-                .help("prints which features are enabled")
+                .help("prints which features are enabled"),
         )
         .arg(
             Arg::with_name("sep")
@@ -74,7 +74,7 @@ fn main() {
                 .takes_value(true)
                 .possible_values(&["off", "warn", "strict"])
                 .default_value("warn")
-                .help("selects the behavior of linting")
+                .help("selects the behavior of linting"),
         )
         .group(
             ArgGroup::with_name("program")
@@ -148,7 +148,14 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         if ext != "" {
             if let Err(err) = fs::rename(&input, format!("{}.{}", input, ext)) {
                 drop(fout);
-                eprint!("unable to rename {}.{} -> {}: {}{}", input, ext, input, err, nl!());
+                eprint!(
+                    "unable to rename {}.{} -> {}: {}{}",
+                    input,
+                    ext,
+                    input,
+                    err,
+                    nl!()
+                );
                 process::exit(1);
             }
         }
@@ -187,7 +194,11 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
         }
     } else {
         if cfg!(not(feature = "stdin-tty")) && atty::is(atty::Stream::Stdin) {
-            eprint!("{}{}", color!(Red, "Stdin is a tty refusing to process"), nl!());
+            eprint!(
+                "{}{}",
+                color!(Red, "Stdin is a tty refusing to process"),
+                nl!()
+            );
             process::exit(1)
         }
 
@@ -236,7 +247,7 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
 
 fn print_features() {
     for (enabled, feature) in romulus::features::features() {
-        let repr = if enabled { "+" }  else { "-" };
+        let repr = if enabled { "+" } else { "-" };
         let color = if enabled { Green } else { Red };
 
         print!("{}{}{}", color!(color, repr), feature, nl!());

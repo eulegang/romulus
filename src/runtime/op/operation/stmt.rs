@@ -14,30 +14,38 @@ pub fn quit(env: &mut Environment) {
 pub fn subst(regex: &Regex, expr: &Expression, env: &mut Environment) {
     let line = match &env.event {
         Line(line) => line.to_string(),
-        _ => return
+        _ => return,
     };
 
-    env.event = Line(regex.replace(&line, |caps: &Captures|  {
-        env.push(Scope::from_captures(regex, caps));
-        let result = expr.to_value(env);
-        env.pop();
-        result
-    }).into_owned());
+    env.event = Line(
+        regex
+            .replace(&line, |caps: &Captures| {
+                env.push(Scope::from_captures(regex, caps));
+                let result = expr.to_value(env);
+                env.pop();
+                result
+            })
+            .into_owned(),
+    );
 }
 
 pub fn gsubst(regex: &Regex, expr: &Expression, env: &mut Environment) {
     let line = match &env.event {
         Line(line) => line.to_string(),
-        _ => return
+        _ => return,
     };
 
-    env.event = Line(regex.replace_all(&line, |caps: &Captures| { 
-        env.push(Scope::from_captures(regex, caps));
-        let result = expr.to_value(env);
-        env.pop();
+    env.event = Line(
+        regex
+            .replace_all(&line, |caps: &Captures| {
+                env.push(Scope::from_captures(regex, caps));
+                let result = expr.to_value(env);
+                env.pop();
 
-        result
-    }).into_owned());
+                result
+            })
+            .into_owned(),
+    );
 }
 
 pub fn read(expr: &Expression, env: &mut Environment) {
@@ -45,7 +53,7 @@ pub fn read(expr: &Expression, env: &mut Environment) {
         Ok(f) => f,
         Err(msg) => {
             eprint!("Error open file {}{}", msg, nl!());
-            return
+            return;
         }
     };
 
@@ -62,13 +70,15 @@ pub fn write(expr: &Expression, env: &mut Environment) {
         let mut file = match std::fs::OpenOptions::new()
             .write(true)
             .append(true)
-            .create(true).open(expr.to_value(env)) {
-                Ok(f) => f,
-                Err(msg) => {
-                    eprint!("Error oppening file {}{}", msg, nl!());
-                    return;
-                }
-            };
+            .create(true)
+            .open(expr.to_value(env))
+        {
+            Ok(f) => f,
+            Err(msg) => {
+                eprint!("Error oppening file {}{}", msg, nl!());
+                return;
+            }
+        };
 
         match write!(file, "{}{}", line, nl!()) {
             Ok(_) => (),
@@ -107,16 +117,16 @@ pub fn set(expr: &Expression, env: &mut Environment) {
 #[cfg(not(target_os = "windows"))]
 fn shell(cmd: &str) -> Result<std::process::Child, std::io::Error> {
     Command::new("sh")
-    .arg("-c")
-    .arg(cmd)
-    .stdout(Stdio::piped())
-    .spawn()
+        .arg("-c")
+        .arg(cmd)
+        .stdout(Stdio::piped())
+        .spawn()
 }
 #[cfg(target_os = "windows")]
 fn shell(cmd: &str) -> Result<std::process::Child, std::io::Error> {
     Command::new("cmd")
-    .arg("/C")
-    .arg(cmd)
-    .stdout(Stdio::piped())
-    .spawn()
+        .arg("/C")
+        .arg(cmd)
+        .stdout(Stdio::piped())
+        .spawn()
 }

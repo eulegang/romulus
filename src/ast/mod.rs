@@ -209,17 +209,18 @@ impl PartialEq for Statement {
         match (self, other) {
             (Statement::Quit, Statement::Quit) => true,
             (Statement::Print(se), Statement::Print(oe)) => se == oe,
-            (Statement::Subst(sr, se), Statement::Subst(or, oe)) => 
-                sr.to_string() == or.to_string() && se == oe,
-            (Statement::Gsubst(sr, se), Statement::Gsubst(or, oe)) => 
-                sr.to_string() == or.to_string() && se == oe,
+            (Statement::Subst(sr, se), Statement::Subst(or, oe)) => {
+                sr.to_string() == or.to_string() && se == oe
+            }
+            (Statement::Gsubst(sr, se), Statement::Gsubst(or, oe)) => {
+                sr.to_string() == or.to_string() && se == oe
+            }
             (Statement::Read(se), Statement::Read(oe)) => se == oe,
             (Statement::Write(se), Statement::Write(oe)) => se == oe,
             (Statement::Exec(se), Statement::Exec(oe)) => se == oe,
             (Statement::Append(se), Statement::Append(oe)) => se == oe,
             (Statement::Set(se), Statement::Set(oe)) => se == oe,
-            _ => false
+            _ => false,
         }
     }
 }
-

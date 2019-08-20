@@ -71,4 +71,3 @@ impl ScopeProvider for ast::PatternMatch {
         scope
     }
 }
-

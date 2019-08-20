@@ -26,7 +26,7 @@ macro_rules! nl {
         } else {
             "\r\n"
         }
-    }
+    };
 }
 
 /// A macro that expands to a colored output if romulus is compiled
@@ -39,9 +39,8 @@ macro_rules! color {
         } else {
             $msg.to_string()
         }
-    }
+    };
 }
-
 
 #[macro_use]
 extern crate lazy_static;
@@ -49,9 +48,9 @@ extern crate lazy_static;
 mod interpreter;
 
 pub mod ast;
-pub mod lex;
-pub mod runtime;
-pub mod lint;
 pub mod features;
+pub mod lex;
+pub mod lint;
+pub mod runtime;
 
 pub use interpreter::Interpreter;

@@ -72,7 +72,6 @@ impl Token {
     }
 }
 
-
 /// Lexes a given string and returns only significant tokens in
 /// a romulus program
 ///
@@ -176,4 +175,3 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
     Ok(tokens)
 }
-

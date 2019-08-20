@@ -1,6 +1,5 @@
 ///! Utilities for the lex function.
 ///! Handles low level character gathering
-
 use std::iter::Peekable;
 use std::ops::RangeInclusive;
 
@@ -25,7 +24,7 @@ pub fn chomp_range<T: Iterator<Item = char>>(
     accepted
 }
 
-/// Gathers characters while the current char is in chars or 
+/// Gathers characters while the current char is in chars or
 /// in one of the ranges in accepts
 #[inline]
 pub fn chomp_multi<T: Iterator<Item = char>>(
@@ -79,7 +78,7 @@ pub fn chomp_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[cha
 
 /// gather characters until the terminating character
 /// if this range of characters is meant to be evaluated with $
-/// then \$ is kept together to distignuish it from actual evaultion 
+/// then \$ is kept together to distignuish it from actual evaultion
 /// at runtime.
 #[inline]
 pub fn chomp_until_escaped<T: Iterator<Item = char>>(
@@ -120,7 +119,10 @@ pub fn chomp_until_escaped<T: Iterator<Item = char>>(
 
 /// Gather characters until a character in the accept set is found
 #[inline]
-pub fn chomp_until_set<T: Iterator<Item = char>>(iter: &mut Peekable<T>, accept: &[char]) -> Vec<char> {
+pub fn chomp_until_set<T: Iterator<Item = char>>(
+    iter: &mut Peekable<T>,
+    accept: &[char],
+) -> Vec<char> {
     let mut accepted: Vec<char> = Vec::new();
 
     while let Some(ch) = &mut iter.peek() {
@@ -149,4 +151,3 @@ pub fn get_number(vec: Vec<char>) -> i64 {
 
     buffer
 }
-

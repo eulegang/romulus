@@ -1,11 +1,11 @@
-use super::{Linter, LintMessage};
+use super::{LintMessage, Linter};
 use crate::ast::*;
 
 mod consumer;
 mod provider;
 mod scoping;
 
-use consumer::{env_vars};
+use consumer::env_vars;
 use scoping::*;
 
 pub(super) struct Vars();
@@ -25,8 +25,12 @@ impl Linter for Vars {
 
         violations
             .iter()
-            .map(|var| LintMessage(format!("Undefined variable {}", color!(ansi_term::Style::new().bold(), var))))
+            .map(|var| {
+                LintMessage(format!(
+                    "Undefined variable {}",
+                    color!(ansi_term::Style::new().bold(), var)
+                ))
+            })
             .collect()
     }
 }
-

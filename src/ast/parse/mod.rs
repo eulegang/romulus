@@ -70,7 +70,7 @@ impl Parsable for Body {
             if Some(&Token::Paren('{')) != tokens.get(cur) {
                 let (statement, done) = Statement::parse(tokens, cur)?;
 
-                return Ok((Body::Single(sel, statement), done))
+                return Ok((Body::Single(sel, statement), done));
             }
 
             let mut current = cur + 1;
@@ -88,7 +88,16 @@ impl Parsable for Body {
                 ));
             }
 
-            Ok((Body::Guard(sel, Seq { subnodes, toplevel: false }), current + 1))
+            Ok((
+                Body::Guard(
+                    sel,
+                    Seq {
+                        subnodes,
+                        toplevel: false,
+                    },
+                ),
+                current + 1,
+            ))
         } else {
             let (node, next) = Statement::parse(&tokens, pos)?;
             Ok((Body::Bare(node), next))
@@ -241,11 +250,19 @@ impl Parsable for Statement {
                     Some(Token::Regex(pat, flags)) => {
                         regex::to_regex(pat.to_string(), flags.to_string())?
                     }
-                    _ => return Err(format!("expected a regex for subst but received {:?}", tokens.get(param_pos))),
+                    _ => {
+                        return Err(format!(
+                            "expected a regex for subst but received {:?}",
+                            tokens.get(param_pos)
+                        ))
+                    }
                 };
 
-                if Some(&Token::Comma) != tokens.get(param_pos+1) {
-                    return Err(format!("expected a comma but found {:?}", tokens.get(param_pos+1)));
+                if Some(&Token::Comma) != tokens.get(param_pos + 1) {
+                    return Err(format!(
+                        "expected a comma but found {:?}",
+                        tokens.get(param_pos + 1)
+                    ));
                 }
 
                 let (expr, p) = Expression::parse(tokens, param_pos + 2)?;
@@ -258,11 +275,19 @@ impl Parsable for Statement {
                     Some(Token::Regex(pat, flags)) => {
                         regex::to_regex(pat.to_string(), flags.to_string())?
                     }
-                    _ => return Err(format!("expected a regex for subst but received {:?}", tokens.get(param_pos))),
+                    _ => {
+                        return Err(format!(
+                            "expected a regex for subst but received {:?}",
+                            tokens.get(param_pos)
+                        ))
+                    }
                 };
 
-                if Some(&Token::Comma) != tokens.get(param_pos+1) {
-                    return Err(format!("expected a comma but found {:?}", tokens.get(param_pos+1)));
+                if Some(&Token::Comma) != tokens.get(param_pos + 1) {
+                    return Err(format!(
+                        "expected a comma but found {:?}",
+                        tokens.get(param_pos + 1)
+                    ));
                 }
 
                 let (expr, p) = Expression::parse(tokens, param_pos + 2)?;
@@ -335,4 +360,3 @@ impl Parsable for Expression {
 
 #[cfg(test)]
 mod tests;
-

@@ -1,5 +1,5 @@
-use crate::runtime::Event;
 use crate::ast::{Body, Match, Selector};
+use crate::runtime::Event;
 
 pub(crate) trait Lifecycle {
     fn is_lifecycle(&self) -> bool;
@@ -28,7 +28,7 @@ impl Lifecycle for Selector {
     fn is_lifecycle(&self) -> bool {
         match self {
             Selector::Match(m) => m.is_lifecycle(),
-            _ => false
+            _ => false,
         }
     }
 }

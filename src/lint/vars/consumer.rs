@@ -1,5 +1,5 @@
-use crate::runtime::op::interpolated_variables;
 use crate::ast::*;
+use crate::runtime::op::interpolated_variables;
 
 pub(super) trait ScopeConsumer {
     fn consumes(&self) -> Vec<String>;
@@ -30,9 +30,7 @@ impl ScopeConsumer for Expression {
             Identifier(name) => vec![name.to_string()],
             String(_, false) => vec![],
 
-            String(content, true) => {
-                interpolated_variables(content)
-            }
+            String(content, true) => interpolated_variables(content),
         }
     }
 }
@@ -44,4 +42,3 @@ pub(super) fn env_vars() -> Vec<String> {
     }
     vars
 }
-

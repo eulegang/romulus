@@ -1,5 +1,5 @@
+use regex::{Captures, Regex};
 use std::collections::HashMap;
-use regex::{Regex, Captures};
 use std::ops::AddAssign;
 
 /// A scope containing variables

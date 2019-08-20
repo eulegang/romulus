@@ -1,6 +1,6 @@
+use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
-use super::RangeCap;
 use regex::Regex;
 use std::io::Write;
 
@@ -90,4 +90,3 @@ impl<'a> Write for Environment<'a> {
         self.out.flush()
     }
 }
-

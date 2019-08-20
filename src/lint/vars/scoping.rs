@@ -1,7 +1,7 @@
-use crate::ast::Seq;
-use crate::ast::Body::*;
 use super::consumer::ScopeConsumer;
 use super::provider::ScopeProvider;
+use crate::ast::Body::*;
+use crate::ast::Seq;
 
 pub(super) fn lint_vars(node: &Seq, vars: &mut Vec<Vec<String>>) -> Vec<String> {
     let mut results = Vec::new();
@@ -30,7 +30,6 @@ pub(super) fn lint_vars(node: &Seq, vars: &mut Vec<Vec<String>>) -> Vec<String> 
     }
     results
 }
-
 
 fn check_vars(vars: &[Vec<String>], needed: Vec<String>) -> Vec<String> {
     let mut violations = Vec::new();
