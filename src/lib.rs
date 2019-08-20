@@ -16,6 +16,8 @@
 
 #![allow(clippy::new_without_default)]
 
+/// A macro that expands to the proper line ending character sequence
+/// for operating system
 #[macro_export]
 macro_rules! nl {
     () => {
