@@ -26,7 +26,13 @@ impl Interpreter {
     pub fn file<P: AsRef<Path>>(file: P, sep: Regex) -> Result<Interpreter, String> {
         let mut file = match File::open(file.as_ref()) {
             Ok(f) => f,
-            Err(err) => return Err(format!("unable to open file romulus file: {}", err)),
+            Err(err) => {
+                return Err(format!(
+                    "unable to open file romulus file '{}': {}",
+                    file.as_ref().display(),
+                    err
+                ))
+            }
         };
 
         let mut buf = String::new();

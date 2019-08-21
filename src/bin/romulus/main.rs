@@ -19,6 +19,15 @@ use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
 
+macro_rules! error {
+    ($format: expr, $($args: expr),*) => {
+        {
+            eprint!("{}{}", color!(Red, format!($format, $($args),*)), nl!());
+            std::process::exit(1);
+        }
+    }
+}
+
 fn main() {
     let matches = App::new("romulus")
         .version(crate_version!())
@@ -104,10 +113,7 @@ fn main() {
 fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     let sep = match Regex::new(matches.value_of("sep").unwrap()) {
         Ok(regex) => regex,
-        Err(msg) => {
-            eprint!("Error parsing sep: {}{}", msg, nl!());
-            process::exit(1);
-        }
+        Err(msg) => error!("Error parsing sep: {}", msg),
     };
 
     if let Some(expr) = matches.value_of("expr") {
@@ -129,18 +135,12 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
     for input in inputs {
         let fin = match File::open(&input) {
             Ok(f) => f,
-            Err(err) => {
-                eprint!("unable to read file '{}': {}{}", input, err, nl!());
-                process::exit(1);
-            }
+            Err(err) => error!("unable to read file '{}': {}", input, err),
         };
 
         let mut fout = match tempfile::NamedTempFile::new() {
             Ok(f) => f,
-            Err(err) => {
-                eprint!("unable to create temp file {}{}", err, nl!());
-                process::exit(1);
-            }
+            Err(err) => error!("unable to create temp file {}", err),
         };
 
         interpreter.process(&mut BufReader::new(fin), &mut fout);
@@ -148,21 +148,12 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         if ext != "" {
             if let Err(err) = fs::rename(&input, format!("{}.{}", input, ext)) {
                 drop(fout);
-                eprint!(
-                    "unable to rename {}.{} -> {}: {}{}",
-                    input,
-                    ext,
-                    input,
-                    err,
-                    nl!()
-                );
-                process::exit(1);
+                error!("unable to rename {}.{} -> {}: {}", input, ext, input, err);
             }
         }
 
         if let Err(err) = fout.persist(input) {
-            eprint!("unable to replace {}: {}{}", input, err, nl!());
-            process::exit(1);
+            error!("unable to replace {}: {}", input, err);
         };
     }
 }
@@ -171,10 +162,7 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
     let mut output: Box<dyn Write> = match matches.value_of("output") {
         Some(filename) => match File::create(filename) {
             Ok(f) => Box::new(f),
-            Err(_) => {
-                eprint!("Unable to create {}{}", filename, nl!());
-                process::exit(1);
-            }
+            Err(_) => error!("unable to create {}", filename),
         },
 
         None => Box::new(stdout()),
@@ -184,22 +172,14 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
         for input in inputs {
             let file = match File::open(input) {
                 Ok(f) => f,
-                Err(_) => {
-                    eprint!("Unable to read {}{}", input, nl!());
-                    process::exit(1);
-                }
+                Err(_) => error!("Unable to read {}", input),
             };
 
             interpreter.process(&mut BufReader::new(file), &mut output);
         }
     } else {
         if cfg!(not(feature = "stdin-tty")) && atty::is(atty::Stream::Stdin) {
-            eprint!(
-                "{}{}",
-                color!(Red, "Stdin is a tty refusing to process"),
-                nl!()
-            );
-            process::exit(1)
+            error!("{}", "Stdin is a tty, refusing to process");
         }
 
         let sin = stdin();
@@ -213,10 +193,7 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
 fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
     match result {
         Ok(t) => t,
-        Err(msg) => {
-            eprint!("{}{}", msg, nl!());
-            process::exit(1);
-        }
+        Err(msg) => error!("{}", msg),
     }
 }
 
