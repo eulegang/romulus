@@ -49,14 +49,12 @@ impl Interpreter {
 
         env.event = Event::Begin;
         self.node.perform(&mut env);
-        env.tracker.reset();
 
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;
             env.event = Event::Line(line.to_string());
 
             self.node.perform(&mut env);
-            env.tracker.reset();
 
             if env.finished() {
                 return;
@@ -65,7 +63,6 @@ impl Interpreter {
 
         env.event = Event::End;
         self.node.perform(&mut env);
-        env.tracker.reset();
     }
 
     /// Lint the current program

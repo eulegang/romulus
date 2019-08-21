@@ -17,10 +17,6 @@ impl RangeScopeTracker {
         self.states[self.pos].is_some()
     }
 
-    pub(crate) fn reset(&mut self) {
-        self.pos = 0;
-    }
-
     pub(crate) fn next(&mut self) {
         self.pos = (self.pos + 1) % self.states.len();
     }
