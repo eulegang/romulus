@@ -1,7 +1,17 @@
 use super::*;
 use crate::ast::*;
+use ansi_term::Colour::Red;
 use regex::Regex;
 use Event::*;
+
+macro_rules! error {
+    ($format: expr, $($args: expr),*) => {
+        {
+            eprint!("{}{}", color!(Red, format!($format, $($args),*)), nl!());
+            return
+        }
+    }
+}
 
 pub fn print(expr: &Expression, env: &mut Environment) {
     env.print(&mut format!("{}{}", expr.to_value(env), nl!()).as_bytes());
@@ -51,10 +61,7 @@ pub fn gsubst(regex: &Regex, expr: &Expression, env: &mut Environment) {
 pub fn read(expr: &Expression, env: &mut Environment) {
     let mut file = match std::fs::File::open(expr.to_value(env)) {
         Ok(f) => f,
-        Err(msg) => {
-            eprint!("Error open file {}{}", msg, nl!());
-            return;
-        }
+        Err(msg) => error!("Error open file {}", msg),
     };
 
     env.print(&mut file);
@@ -69,31 +76,20 @@ pub fn write(expr: &Expression, env: &mut Environment) {
             .open(expr.to_value(env))
         {
             Ok(f) => f,
-            Err(msg) => {
-                eprint!("Error oppening file {}{}", msg, nl!());
-                return;
-            }
+            Err(msg) => error!("Error opening file {}", msg),
         };
 
         match write!(file, "{}{}", line, nl!()) {
             Ok(_) => (),
-            Err(msg) => {
-                eprint!("Error writing to file {}{}", msg, nl!());
-                return;
-            }
+            Err(msg) => error!("Error writing to file {}", msg),
         }
     }
 }
 
 pub fn exec(expr: &Expression, env: &mut Environment) {
     match shell(&expr.to_value(env)) {
-        Err(msg) => {
-            eprint!("unable to execute: {}{}", msg, nl!());
-        }
-
-        Ok(child) => {
-            env.print(&mut child.stdout.unwrap());
-        }
+        Err(msg) => error!("unable to execute: {}", msg),
+        Ok(child) => env.print(&mut child.stdout.unwrap()),
     };
 }
 
