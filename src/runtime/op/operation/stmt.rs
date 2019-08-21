@@ -88,9 +88,15 @@ pub fn write(expr: &Expression, env: &mut Environment) {
 
 pub fn exec(expr: &Expression, env: &mut Environment) {
     match shell(&expr.to_value(env)) {
-        Err(msg) => error!("unable to execute: {}", msg),
-        Ok(child) => env.print(&mut child.stdout.unwrap()),
-    };
+        Err(msg) => {
+            let message = format!("unable to execute: {}", msg);
+            eprint!("{}{}", color!(Red, message), nl!());
+        }
+
+        Ok(child) => {
+            env.print(&mut child.stdout.unwrap());
+        }
+    }
 }
 
 pub fn append(expr: &Expression, env: &mut Environment) {
