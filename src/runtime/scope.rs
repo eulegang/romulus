@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::ops::AddAssign;
 
 /// A scope containing variables
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Scope {
     local: HashMap<String, String>,
 }

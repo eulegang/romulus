@@ -65,6 +65,6 @@ impl ScopeProvider for ast::PatternMatch {
 
             scope
         })
-        .unwrap_or(Scope::new())
+        .unwrap_or_default()
     }
 }
