@@ -1,3 +1,4 @@
+use super::op::Valuable;
 use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
@@ -97,5 +98,25 @@ impl<'a> Environment<'a> {
         } else {
             None
         }
+    }
+
+    pub(crate) fn eval<V: Valuable>(&mut self, scope: Scope, val: &V) -> String {
+        self.push(scope);
+        let result = val.to_value(self);
+        self.pop();
+        result
+    }
+
+    pub(crate) fn replace_line<F>(&mut self, handle: F)
+    where
+        F: Fn(&mut Self, String) -> String,
+    {
+        let line = if let Event::Line(line) = &mut self.event {
+            line.clone()
+        } else {
+            return;
+        };
+
+        self.event = Event::Line(handle(self, line));
     }
 }

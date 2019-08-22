@@ -1,3 +1,4 @@
+use super::Valuable;
 use super::*;
 use crate::ast::*;
 use ansi_term::Colour::Red;
@@ -22,40 +23,23 @@ pub fn quit(env: &mut Environment) {
 }
 
 pub fn subst(regex: &Regex, expr: &Expression, env: &mut Environment) {
-    let line = match &env.event {
-        Line(line) => line.to_string(),
-        _ => return,
-    };
-
-    env.event = Line(
+    env.replace_line(|env, line| {
         regex
             .replace(&line, |caps: &Captures| {
-                env.push(Scope::from_captures(regex, caps));
-                let result = expr.to_value(env);
-                env.pop();
-                result
+                env.eval(Scope::from_captures(regex, caps), expr)
             })
-            .into_owned(),
-    );
+            .into_owned()
+    });
 }
 
 pub fn gsubst(regex: &Regex, expr: &Expression, env: &mut Environment) {
-    let line = match &env.event {
-        Line(line) => line.to_string(),
-        _ => return,
-    };
-
-    env.event = Line(
+    env.replace_line(|env, line| {
         regex
             .replace_all(&line, |caps: &Captures| {
-                env.push(Scope::from_captures(regex, caps));
-                let result = expr.to_value(env);
-                env.pop();
-
-                result
+                env.eval(Scope::from_captures(regex, caps), expr)
             })
-            .into_owned(),
-    );
+            .into_owned()
+    });
 }
 
 pub fn read(expr: &Expression, env: &mut Environment) {
@@ -100,15 +84,11 @@ pub fn exec(expr: &Expression, env: &mut Environment) {
 }
 
 pub fn append(expr: &Expression, env: &mut Environment) {
-    if let Line(line) = &env.event {
-        env.event = Line(format!("{}{}", line, expr.to_value(&env)));
-    }
+    env.replace_line(|env, line| format!("{}{}", line, expr.to_value(&env)));
 }
 
 pub fn set(expr: &Expression, env: &mut Environment) {
-    if let Line(_) = &env.event {
-        env.event = Line(expr.to_value(&env));
-    }
+    env.replace_line(|env, _| expr.to_value(env))
 }
 
 #[cfg(not(target_os = "windows"))]
