@@ -30,37 +30,40 @@ trait Parsable: Sized {
     fn try_parse(tokens: &[Token], pos: usize) -> Option<(Self, usize)> {
         Self::parse(&tokens, pos).ok()
     }
+
+    fn parse_mut(tokens: &[Token], pos: &mut usize) -> Result<Self, String> {
+        let (s, next) = Self::parse(tokens, *pos)?;
+        *pos = next;
+
+        Ok(s)
+    }
 }
 
 impl Parsable for Seq {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Seq, usize), String> {
+        let mut pos = pos;
         let mut subnodes = Vec::new();
-        let mut cur = pos;
         let toplevel = false;
 
-        while cur != tokens.len() {
-            let (body_node, next) = Body::parse(&tokens, cur)?;
-            cur = next;
-            subnodes.push(body_node);
+        while pos != tokens.len() {
+            subnodes.push(Body::parse_mut(&tokens, &mut pos)?);
         }
 
-        Ok((Seq { subnodes, toplevel }, cur))
+        Ok((Seq { subnodes, toplevel }, pos))
     }
 }
 
 impl Seq {
     fn parse_toplevel(tokens: &[Token], pos: usize) -> Result<(Seq, usize), String> {
+        let mut pos = pos;
         let mut subnodes = Vec::new();
-        let mut cur = pos;
         let toplevel = true;
 
-        while cur != tokens.len() {
-            let (body_node, next) = Body::parse(&tokens, cur)?;
-            cur = next;
-            subnodes.push(body_node);
+        while pos != tokens.len() {
+            subnodes.push(Body::parse_mut(&tokens, &mut pos)?);
         }
 
-        Ok((Seq { subnodes, toplevel }, cur))
+        Ok((Seq { subnodes, toplevel }, pos))
     }
 }
 
@@ -76,9 +79,7 @@ impl Parsable for Body {
             let mut current = cur + 1;
             let mut subnodes = Vec::new();
             while Some(&Token::Paren('}')) != tokens.get(current) {
-                let (node, next) = Body::parse(&tokens, current)?;
-                subnodes.push(node);
-                current = next;
+                subnodes.push(Body::parse_mut(&tokens, &mut current)?);
             }
 
             if Some(&Token::Paren('}')) != tokens.get(current) {
@@ -144,9 +145,7 @@ impl Parsable for PatternMatch {
         let mut cur = pos + 1;
 
         loop {
-            let (pattern, after_pat) = Pattern::parse(&tokens, cur)?;
-            cur = after_pat;
-            patterns.push(pattern);
+            patterns.push(Pattern::parse_mut(&tokens, &mut cur)?);
 
             if Some(&Token::Paren(']')) == tokens.get(cur) {
                 break;
@@ -211,18 +210,21 @@ impl Parsable for Match {
 
 impl Parsable for Range {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Range, usize), String> {
-        let (start_match, after_start) = Match::parse(&tokens, pos)?;
+        let mut pos = pos;
+        let start_match = Match::parse_mut(&tokens, &mut pos)?;
 
-        if Some(&Token::Comma) != tokens.get(after_start) {
+        if Some(&Token::Comma) != tokens.get(pos) {
             return Err(format!(
                 "expected a comma but received: {:?}",
-                tokens.get(after_start)
+                tokens.get(pos)
             ));
         }
 
-        let (end_match, after_end) = Match::parse(&tokens, after_start + 1)?;
+        pos += 1;
 
-        Ok((Range(start_match, end_match), after_end))
+        let end_match = Match::parse_mut(&tokens, &mut pos)?;
+
+        Ok((Range(start_match, end_match), pos))
     }
 }
 
