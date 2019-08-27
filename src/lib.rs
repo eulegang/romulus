@@ -14,6 +14,8 @@
 //! ```
 //!
 
+#![deny(missing_docs)]
+
 /// A macro that expands to the proper line ending character sequence
 /// for operating system
 #[macro_export]

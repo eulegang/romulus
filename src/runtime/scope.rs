@@ -16,6 +16,8 @@ impl Scope {
         }
     }
 
+    /// Extracts a scope from a line given
+    /// a regular expression with named capture groups
     pub fn from_regex(regex: &Regex, line: &str) -> Scope {
         let mut scope = Scope::new();
 
@@ -36,7 +38,7 @@ impl Scope {
         scope
     }
 
-    pub fn from_captures(regex: &Regex, captures: &Captures) -> Scope {
+    pub(crate) fn from_captures(regex: &Regex, captures: &Captures) -> Scope {
         let mut scope = Scope::new();
 
         for name in regex.capture_names() {

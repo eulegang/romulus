@@ -151,11 +151,27 @@ pub enum Expression {
 pub enum Statement {
     /// Print the given expression
     Print(Expression),
+
+    /// Quits the program.
+    /// This ignores instructs the interpreter to ignore the rest
+    /// of the instructions left in the program instead of exiting 0
     Quit,
+
+    /// Substitutes the first match in the current line
+    /// with the evaluation of an expression
     Subst(Box<Regex>, Expression),
+
+    /// Substitutes all matches in the current line with
+    /// the evaulation of an expression
     Gsubst(Box<Regex>, Expression),
+
+    /// Prints the contents of the specified file to the output stream
     Read(Expression),
+
+    /// Writes the current line to the specified file
     Write(Expression),
+
+    /// Executes the given expression as a shell command
     Exec(Expression),
 
     /// Appends the value of the expression to the line
@@ -168,14 +184,20 @@ pub enum Statement {
 /// A guarded statement or a plain one
 #[derive(Debug, PartialEq)]
 pub enum Body {
+    /// A statement which is executed without condition
     Bare(Statement),
+
+    /// A single statement which is executed dependent on the selector
     Single(Selector, Statement),
+
+    /// A sequence of statement which is executed dependent on the selector
     Guard(Selector, Seq),
 }
 
 /// Contains multiple sub nodes
 #[derive(Debug, PartialEq)]
 pub struct Seq {
+    /// The subnodes that are contained in a sequence of nodes
     pub subnodes: Vec<Body>,
     pub(crate) toplevel: bool,
 }
