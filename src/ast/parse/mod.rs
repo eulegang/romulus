@@ -25,6 +25,34 @@ macro_rules! guard_eof {
     };
 }
 
+#[inline]
+fn parse_until<T: Parsable>(
+    token: Token,
+    tokens: &[Token],
+    pos: &mut usize,
+) -> Result<Vec<T>, String> {
+    let mut subnodes = Vec::new();
+
+    while Some(&token) != tokens.get(*pos) {
+        subnodes.push(<T>::parse_mut(&tokens, pos)?);
+    }
+
+    expect_token(token, tokens, pos)?;
+
+    Ok(subnodes)
+}
+
+fn expect_token(token: Token, tokens: &[Token], pos: &mut usize) -> Result<(), String> {
+    match tokens.get(*pos) {
+        Some(t) if t == &token => {
+            *pos = *pos + 1;
+            Ok(())
+        }
+        Some(t) => Err(format!("expected {:?} but recieved {:?}", token, t)),
+        None => Err("unexpected EOF".to_string()),
+    }
+}
+
 trait Parsable: Sized {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Self, usize), String>;
     fn try_parse(tokens: &[Token], pos: usize) -> Option<(Self, usize)> {
@@ -69,40 +97,33 @@ impl Seq {
 
 impl Parsable for Body {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Body, usize), String> {
-        if let Some((sel, cur)) = Selector::try_parse(&tokens, pos) {
-            if Some(&Token::Paren('{')) != tokens.get(cur) {
-                let (statement, done) = Statement::parse(tokens, cur)?;
-
-                return Ok((Body::Single(sel, statement), done));
+        let mut pos = pos;
+        let sel = match Selector::parse_mut(&tokens, &mut pos) {
+            Ok(sel) => sel,
+            Err(_) => {
+                let (node, next) = Statement::parse(&tokens, pos)?;
+                return Ok((Body::Bare(node), next));
             }
+        };
 
-            let mut current = cur + 1;
-            let mut subnodes = Vec::new();
-            while Some(&Token::Paren('}')) != tokens.get(current) {
-                subnodes.push(Body::parse_mut(&tokens, &mut current)?);
-            }
+        if Some(&Token::Paren('{')) != tokens.get(pos) {
+            let statement = Statement::parse_mut(tokens, &mut pos)?;
 
-            if Some(&Token::Paren('}')) != tokens.get(current) {
-                return Err(format!(
-                    "expected }} but received: {:?}",
-                    tokens.get(current)
-                ));
-            }
-
-            Ok((
-                Body::Guard(
-                    sel,
-                    Seq {
-                        subnodes,
-                        toplevel: false,
-                    },
-                ),
-                current + 1,
-            ))
-        } else {
-            let (node, next) = Statement::parse(&tokens, pos)?;
-            Ok((Body::Bare(node), next))
+            return Ok((Body::Single(sel, statement), pos));
         }
+
+        pos += 1;
+
+        return Ok((
+            Body::Guard(
+                sel,
+                Seq {
+                    subnodes: parse_until(Token::Paren('}'), tokens, &mut pos)?,
+                    toplevel: false,
+                },
+            ),
+            pos,
+        ));
     }
 }
 
