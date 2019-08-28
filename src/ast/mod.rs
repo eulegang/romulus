@@ -135,6 +135,14 @@ pub enum Selector {
     /// }
     /// ```
     Pattern(PatternMatch),
+
+    /// A negation of a pattern
+    /// ```text
+    /// !/pattern/ {
+    ///   print _
+    /// }
+    /// ```
+    Negate(Box<Selector>),
 }
 
 /// A expression

@@ -7,10 +7,12 @@ pub trait ScopeProvider {
 
 impl ScopeProvider for ast::Selector {
     fn scope(&self, env: &Environment) -> Scope {
+        use ast::Selector::*;
         match self {
-            ast::Selector::Match(match_node) => match_node.scope(env),
-            ast::Selector::Range(range_node) => range_node.scope(env),
-            ast::Selector::Pattern(pattern_match_node) => pattern_match_node.scope(env),
+            Match(match_node) => match_node.scope(env),
+            Range(range_node) => range_node.scope(env),
+            Pattern(pattern_match_node) => pattern_match_node.scope(env),
+            Negate(_) => Scope::default(),
         }
     }
 }

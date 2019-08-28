@@ -12,6 +12,7 @@ impl ScopeProvider for Selector {
             Match(m) => m.provides(),
             Range(r) => r.provides(),
             Pattern(p) => p.provides(),
+            Negate(_) => vec![],
         }
     }
 }

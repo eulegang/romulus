@@ -108,6 +108,11 @@ impl Parsable for Body {
 
 impl Parsable for Selector {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Selector, usize), String> {
+        if tokens.get(pos) == Some(&Token::Symbol('!')) {
+            let (sub, next) = Selector::parse(tokens, pos + 1)?;
+            return Ok((Selector::Negate(Box::new(sub)), next));
+        }
+
         if tokens.get(pos) == Some(&Token::Paren('[')) {
             let (pattern_match, next) = PatternMatch::parse(tokens, pos)?;
 

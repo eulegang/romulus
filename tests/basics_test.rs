@@ -5,24 +5,22 @@ use regex::Regex;
 use romulus::Interpreter;
 
 macro_rules! check_output {
-    ($prog: expr, $input: expr, $expected: expr) => {
-        {
-            let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap()).unwrap();
+    ($prog: expr, $input: expr, $expected: expr) => {{
+        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap()).unwrap();
 
-            let mut out = Vec::new();
-            let mut sin = $input.as_bytes();
+        let mut out = Vec::new();
+        let mut sin = $input.as_bytes();
 
-            interpreter.process(&mut sin, &mut out);
+        interpreter.process(&mut sin, &mut out);
 
-            let actual_expected = if cfg!(target_os = "windows") {
-                $expected.replace("\n", "\r\n")
-            } else {
-                $expected.to_string()
-            };
+        let actual_expected = if cfg!(target_os = "windows") {
+            $expected.replace("\n", "\r\n")
+        } else {
+            $expected.to_string()
+        };
 
-            assert_eq!(String::from_utf8(out).unwrap(), actual_expected);
-        }
-    }
+        assert_eq!(String::from_utf8(out).unwrap(), actual_expected);
+    }};
 }
 
 #[test]
@@ -143,4 +141,19 @@ fn set() {
         "set x 123\nget x\n",
         "x = 123\nget x\n"
     )
+}
+
+#[test]
+fn negation() {
+    check_output!(
+        "!1 print _",
+        "hello\nworld\nnice\nto\nmeet\nyou!\n",
+        "world\nnice\nto\nmeet\nyou!\n"
+    );
+
+    check_output!(
+        "! 2,/meet/ print _",
+        "hello\nworld\nnice\nto\nmeet\nyou!\n",
+        "hello\nmeet\nyou!\n"
+    );
 }

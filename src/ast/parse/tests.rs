@@ -50,6 +50,7 @@ macro_rules! id {
 
 macro_rules! selector {
     (m$ast: expr) => { Selector::Match($ast) };
+    (!$ast: expr) => { Selector::Negate(Box::new($ast)) };
     (-$start:expr, $end:expr) => { Selector::Range(Range($start, $end)) };
     ($($ast: expr),*) => {
         {
@@ -309,4 +310,19 @@ fn parse_single() {
             )
         ])
     );
+}
+
+#[test]
+fn parse_negation() {
+    let tokens = lex("!/thing/ exec \"echo ${_}\"").unwrap();
+
+    assert_eq!(
+        parse(tokens),
+        Ok(seq![tl
+            Body::Single(
+                selector!(! selector!(m rmatch!("thing"))),
+                Statement::Exec(quote!("echo ${_}"))
+            )
+        ])
+    )
 }
