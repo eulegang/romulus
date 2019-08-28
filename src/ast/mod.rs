@@ -123,7 +123,7 @@ pub enum Selector {
     /// A range is given
     /// ```text
     /// /BEGIN/,/END/ {
-    ///   print() # would print initial BEGIN line
+    ///   print _ # would print initial BEGIN line
     /// }
     /// ```
     Range(Range),
@@ -131,7 +131,7 @@ pub enum Selector {
     /// A pattern is given
     /// ```text
     /// [/none/, _, id] {
-    ///   print()
+    ///   print _
     /// }
     /// ```
     Pattern(PatternMatch),
