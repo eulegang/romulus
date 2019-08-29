@@ -129,26 +129,36 @@ impl Parsable for Body {
 
 impl Parsable for Selector {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Selector, usize), String> {
-        if tokens.get(pos) == Some(&Token::Symbol('!')) {
-            let (sub, next) = Selector::parse(tokens, pos + 1)?;
-            return Ok((Selector::Negate(Box::new(sub)), next));
+        let mut pos = pos;
+        match tokens.get(pos) {
+            Some(&Token::Symbol('!')) => {
+                pos += 1;
+
+                Ok((
+                    Selector::Negate(Box::new(Selector::parse_mut(tokens, &mut pos)?)),
+                    pos,
+                ))
+            }
+
+            Some(&Token::Paren('[')) => Ok((
+                Selector::Pattern(PatternMatch::parse_mut(tokens, &mut pos)?),
+                pos,
+            )),
+
+            _ => {
+                let s = Match::parse_mut(tokens, &mut pos)?;
+
+                if Some(&Token::Comma) != tokens.get(pos) {
+                    return Ok((Selector::Match(s), pos));
+                }
+
+                pos += 1;
+
+                let e = Match::parse_mut(tokens, &mut pos)?;
+
+                Ok((Selector::Range(Range(s, e)), pos))
+            }
         }
-
-        if tokens.get(pos) == Some(&Token::Paren('[')) {
-            let (pattern_match, next) = PatternMatch::parse(tokens, pos)?;
-
-            return Ok((Selector::Pattern(pattern_match), next));
-        }
-
-        let (s, next) = Match::parse(tokens, pos)?;
-
-        if Some(&Token::Comma) != tokens.get(next) {
-            return Ok((Selector::Match(s), next));
-        }
-
-        let (e, after_end) = Match::parse(tokens, next + 1)?;
-
-        Ok((Selector::Range(Range(s, e)), after_end))
     }
 }
 
@@ -190,26 +200,28 @@ impl Parsable for PatternMatch {
 
 impl Parsable for Pattern {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Pattern, usize), String> {
-        if let Some(Token::Regex(pattern, flags)) = tokens.get(pos) {
-            let regex = regex::to_regex(pattern.to_string(), flags.to_string())?;
-            return Ok((Pattern::Regex(regex), pos + 1));
-        }
+        match tokens.get(pos) {
+            Some(&Token::Regex(ref pattern, ref flags)) => {
+                let regex = regex::to_regex(pattern.to_string(), flags.to_string())?;
+                Ok((Pattern::Regex(regex), pos + 1))
+            }
 
-        if let Some(Token::String(content, interpolatable)) = tokens.get(pos) {
-            return Ok((
-                Pattern::String(content.to_string(), *interpolatable),
+            Some(&Token::String(ref content, interpolatable)) => Ok((
+                Pattern::String(content.to_string(), interpolatable),
                 pos + 1,
-            ));
+            )),
+
+            Some(&Token::Identifier(ref name)) => {
+                Ok((Pattern::Identifier(name.to_string()), pos + 1))
+            }
+
+            None => Err(String::from("unexpected EOF")),
+
+            found => Err(format!(
+                "Expected litteral or identifier but received: {:?}",
+                found
+            )),
         }
-
-        if let Some(Token::Identifier(name)) = tokens.get(pos) {
-            return Ok((Pattern::Identifier(name.to_string()), pos + 1));
-        };
-
-        Err(format!(
-            "Expected litteral or identifier but received: {:?}",
-            tokens.get(pos)
-        ))
     }
 }
 
