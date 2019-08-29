@@ -45,7 +45,7 @@ fn parse_until<T: Parsable>(
 fn expect_token(token: Token, tokens: &[Token], pos: &mut usize) -> Result<(), String> {
     match tokens.get(*pos) {
         Some(t) if t == &token => {
-            *pos = *pos + 1;
+            *pos += 1;
             Ok(())
         }
         Some(t) => Err(format!("expected {:?} but recieved {:?}", token, t)),
@@ -114,7 +114,7 @@ impl Parsable for Body {
 
         pos += 1;
 
-        return Ok((
+        Ok((
             Body::Guard(
                 sel,
                 Seq {
@@ -123,7 +123,7 @@ impl Parsable for Body {
                 },
             ),
             pos,
-        ));
+        ))
     }
 }
 
