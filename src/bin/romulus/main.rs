@@ -85,6 +85,13 @@ fn main() {
                 .default_value("warn")
                 .help("selects the behavior of linting"),
         )
+        .arg(
+            Arg::with_name("explicit")
+                .short("E")
+                .long("explicit")
+                .takes_value(false)
+                .help("disable implicit line printing"),
+        )
         .group(
             ArgGroup::with_name("program")
                 .args(&["file", "expr", "features"])
@@ -117,11 +124,15 @@ fn create_interpreter(matches: &ArgMatches) -> Interpreter {
     };
 
     if let Some(expr) = matches.value_of("expr") {
-        return ok_or_exit(Interpreter::new(expr, sep));
+        return ok_or_exit(Interpreter::new(expr, sep, !matches.is_present("explicit")));
     }
 
     if let Some(filename) = matches.value_of("file") {
-        return ok_or_exit(Interpreter::file(filename, sep));
+        return ok_or_exit(Interpreter::file(
+            filename,
+            sep,
+            !matches.is_present("explicit"),
+        ));
     }
 
     unreachable!()

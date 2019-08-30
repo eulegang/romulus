@@ -5,6 +5,7 @@ mod operation;
 mod range_cap;
 mod scope_provider;
 mod selector;
+mod sig_statement;
 mod valuable;
 
 pub use operation::*;
@@ -13,3 +14,4 @@ pub use selector::*;
 pub use valuable::*;
 
 pub(crate) use range_cap::*;
+pub(crate) use sig_statement::*;

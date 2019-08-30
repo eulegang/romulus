@@ -6,7 +6,24 @@ use romulus::Interpreter;
 
 macro_rules! check_output {
     ($prog: expr, $input: expr, $expected: expr) => {{
-        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap()).unwrap();
+        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), true).unwrap();
+
+        let mut out = Vec::new();
+        let mut sin = $input.as_bytes();
+
+        interpreter.process(&mut sin, &mut out);
+
+        let actual_expected = if cfg!(target_os = "windows") {
+            $expected.replace("\n", "\r\n")
+        } else {
+            $expected.to_string()
+        };
+
+        assert_eq!(String::from_utf8(out).unwrap(), actual_expected);
+    }};
+
+    ($prog: expr, $input: expr, $expected: expr, $implicit: expr) => {{
+        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), $implicit).unwrap();
 
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
@@ -156,4 +173,18 @@ fn negation() {
         "hello\nworld\nnice\nto\nmeet\nyou!\n",
         "hello\nmeet\nyou!\n"
     );
+}
+
+#[test]
+fn implicit_print() {
+    check_output!(
+        "subst /hello/, 'goodbye'",
+        "hello world\ncy@\n",
+        "goodbye world\ncy@\n"
+    );
+}
+
+#[test]
+fn disabled_implicit_print() {
+    check_output!("subst /hello/, 'goodbye'", "hello world\ncy@\n", "", false);
 }

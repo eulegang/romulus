@@ -1,4 +1,4 @@
-use crate::runtime::op::Operation;
+use crate::runtime::op::{Operation, SigStatement};
 use crate::runtime::{Environment, Event, Scope};
 use crate::{ast, lex, lint};
 
@@ -11,19 +11,32 @@ use std::path::Path;
 pub struct Interpreter {
     node: ast::Seq,
     sep: Regex,
+    implicit_print: bool,
 }
 
 impl Interpreter {
     /// Creates a new interpreter with a string romulus program
-    pub fn new<S: AsRef<str>>(buf: S, sep: Regex) -> Result<Interpreter, String> {
+    pub fn new<S: AsRef<str>>(
+        buf: S,
+        sep: Regex,
+        implicit_print: bool,
+    ) -> Result<Interpreter, String> {
         let tokens = lex::lex(buf.as_ref())?;
         let node = ast::parse(tokens)?;
 
-        Ok(Interpreter { node, sep })
+        Ok(Interpreter {
+            node,
+            sep,
+            implicit_print,
+        })
     }
 
     /// Creates a new interpreter with a the contents of a file
-    pub fn file<P: AsRef<Path>>(file: P, sep: Regex) -> Result<Interpreter, String> {
+    pub fn file<P: AsRef<Path>>(
+        file: P,
+        sep: Regex,
+        implicit_print: bool,
+    ) -> Result<Interpreter, String> {
         let mut file = match File::open(file.as_ref()) {
             Ok(f) => f,
             Err(err) => {
@@ -40,7 +53,7 @@ impl Interpreter {
             return Err(format!("unable to read romulus file: {}", err));
         }
 
-        Interpreter::new(&buf, sep)
+        Interpreter::new(&buf, sep, implicit_print)
     }
 
     /// Process an input stream and writes the results for it's romulus program to
@@ -53,6 +66,8 @@ impl Interpreter {
             env.push(Scope::env());
         }
 
+        let implicit_print = !self.node.significant();
+
         env.event = Event::Begin;
         self.node.perform(&mut env);
 
@@ -64,6 +79,15 @@ impl Interpreter {
 
             if env.finished() {
                 return;
+            }
+
+            if implicit_print && self.implicit_print {
+                let line = match &env.event {
+                    Event::Line(line) => line.clone(),
+                    _ => unreachable!(),
+                };
+
+                env.print(&mut format!("{}{}", line, nl!()).as_bytes());
             }
         }
 
