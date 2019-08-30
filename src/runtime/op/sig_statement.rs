@@ -23,7 +23,7 @@ impl SigStatement for ast::Seq {
             }
         }
 
-        return false;
+        false
     }
 }
 
