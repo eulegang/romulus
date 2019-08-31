@@ -4,6 +4,7 @@ description = "a stream editor like sed"
 version = "0.1.7"
 authors = ["eulegang<eulegang@gmail.com>"]
 repository = "https://github.com/eulegang/romulus"
+readme = "README.md"
 license = "MIT"
 edition = "2018"
 keywords = ["text", "cli", "sed", "grep", "awk"]

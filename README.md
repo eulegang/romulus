@@ -1,9 +1,10 @@
 
 # Romulus
 
+A mondern alternative to sed
+
 [![Build Status](https://travis-ci.org/eulegang/romulus.svg?branch=master)](https://travis-ci.org/eulegang/romulus)
 
-A mondern alternative to sed
 
 ## Versions
 
@@ -25,4 +26,12 @@ given a executable file parse\_ifconfig such as
 ```
 
 running `ifconfig | parse\_ifconfig` should yield your current network interfaces which have ips
+
+## Installation
+
+Currenty the only supported way to install romulus is to install by source code
+
+```
+$ cargo install romulus
+```
 
