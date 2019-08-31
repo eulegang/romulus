@@ -47,10 +47,11 @@ extern crate lazy_static;
 
 mod interpreter;
 
-pub mod ast;
-pub mod features;
-pub mod lex;
-pub mod lint;
-pub mod runtime;
+mod ast;
+mod features;
+mod lex;
+mod lint;
+mod runtime;
 
+pub use features::*;
 pub use interpreter::Interpreter;

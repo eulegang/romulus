@@ -234,7 +234,7 @@ fn lint(interpreter: &Interpreter, matches: &ArgMatches) {
 }
 
 fn print_features() {
-    for (enabled, feature) in romulus::features::features() {
+    for (enabled, feature) in romulus::features() {
         let repr = if enabled { "+" } else { "-" };
         let color = if enabled { Green } else { Red };
 
