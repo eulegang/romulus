@@ -130,15 +130,11 @@ impl Selector {
     }
 
     fn parse_not(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
-        let mut pos = pos;
         match tokens.get(pos) {
             Some(&Token::Symbol('!')) => {
-                pos += 1;
+                let (sub, next) = Selector::parse_single(tokens, pos + 1)?;
 
-                Ok((
-                    Selector::Negate(Box::new(Selector::parse_mut(tokens, &mut pos)?)),
-                    pos,
-                ))
+                Ok((Selector::Negate(Box::new(sub)), next))
             }
 
             _ => Selector::parse_single(tokens, pos),
@@ -153,6 +149,21 @@ impl Selector {
                 pos,
             )),
 
+            Some(&Token::Paren('(')) => {
+                pos += 1;
+                let sel = Selector::parse_mut(tokens, &mut pos)?;
+
+                if tokens.get(pos) != Some(&Token::Paren(')')) {
+                    return Err(format!(
+                        "expected end of expression but received {:?}",
+                        tokens.get(pos)
+                    ));
+                }
+
+                pos += 1;
+
+                Ok((sel, pos))
+            }
             _ => {
                 let s = Match::parse_mut(tokens, &mut pos)?;
 
