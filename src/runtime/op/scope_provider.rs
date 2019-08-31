@@ -1,6 +1,8 @@
 use super::*;
 use crate::ast;
 
+use crate::lint::vars::provider::ScopeProvider as VarProvider;
+
 pub trait ScopeProvider {
     fn scope(&self, env: &Environment) -> Scope;
 }
@@ -14,6 +16,7 @@ impl ScopeProvider for ast::Selector {
             Pattern(pattern_match_node) => pattern_match_node.scope(env),
             Negate(_) => Scope::default(),
             Conjunction(lh, rh) => lh.scope(env) + rh.scope(env),
+            Disjunction(lh, rh) => (lh.scope(env) + rh.scope(env)).pick(&self.provides()),
         }
     }
 }

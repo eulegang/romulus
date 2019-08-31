@@ -144,13 +144,21 @@ pub enum Selector {
     /// ```
     Negate(Box<Selector>),
 
-    /// A conjunction of match patterns
+    /// A conjunction of selector patterns
     /// ```text
     /// 1 & /none/ {
     ///   print _
     /// }
     /// ```
     Conjunction(Box<Selector>, Box<Selector>),
+
+    /// A distjuction of selector patterns
+    /// ```text
+    /// ['<none>', _, id] | [_, '<none>', id] {
+    ///   exec "docker rmi ${id}"
+    /// }
+    /// ```
+    Disjunction(Box<Selector>, Box<Selector>),
 }
 
 /// A expression

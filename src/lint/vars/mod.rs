@@ -2,7 +2,7 @@ use super::{LintMessage, Linter};
 use crate::ast::*;
 
 mod consumer;
-mod provider;
+pub(crate) mod provider;
 mod scoping;
 
 use consumer::env_vars;

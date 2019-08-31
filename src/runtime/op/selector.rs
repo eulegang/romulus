@@ -14,6 +14,13 @@ impl Selector for ast::Selector {
             Pattern(pattern_node) => pattern_node.select(env),
             Negate(selector) => !selector.select(env),
             Conjunction(lh, rh) => lh.select(env) && rh.select(env),
+            Disjunction(lh, rh) => {
+                // Eagerly evauting since ranges are stateful
+                let l = lh.select(env);
+                let r = rh.select(env);
+
+                l || r
+            }
         }
     }
 }

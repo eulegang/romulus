@@ -100,11 +100,23 @@ impl Parsable for Body {
 
 impl Parsable for Selector {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Selector, usize), String> {
-        Selector::parse_and(tokens, pos)
+        Selector::parse_or(tokens, pos)
     }
 }
 
 impl Selector {
+    fn parse_or(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
+        let (lh, next) = Selector::parse_and(tokens, pos)?;
+
+        if tokens.get(next) == Some(&Token::Symbol('|')) {
+            let (rh, end) = Selector::parse(tokens, next + 1)?;
+
+            Ok((Selector::Disjunction(Box::new(lh), Box::new(rh)), end))
+        } else {
+            Ok((lh, next))
+        }
+    }
+
     fn parse_and(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
         let (lh, next) = Selector::parse_not(tokens, pos)?;
 

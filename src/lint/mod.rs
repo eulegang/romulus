@@ -3,7 +3,7 @@
 use crate::ast::Seq;
 use std::fmt;
 
-mod vars;
+pub(crate) mod vars;
 
 /// Lints a romulus program with standard linters
 ///

@@ -39,6 +39,7 @@ impl RangeCap for ast::Selector {
             Pattern(_) => 0,
             Negate(sub) => sub.num_ranges(),
             Conjunction(lh, rh) => lh.num_ranges() + rh.num_ranges(),
+            Disjunction(lh, rh) => lh.num_ranges() + rh.num_ranges(),
         }
     }
 }

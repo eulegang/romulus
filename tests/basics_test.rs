@@ -193,7 +193,7 @@ fn disabled_implicit_print() {
 fn selector_conjunction() {
     check_output!(
         "/thing/ & /there/ print _",
-        "this thing\nthing something there\nthere",
+        "this thing\nthing something there\nthere\n",
         "thing something there\n"
     );
 
@@ -201,5 +201,14 @@ fn selector_conjunction() {
         "/export (?P<name>[a-zA-Z]+)/ & /= (?P<value>.*)/ print \"${name}: ${value}\"",
         "export NAME = VALUE\n",
         "NAME: VALUE\n"
+    );
+}
+
+#[test]
+fn selector_disjunction() {
+    check_output!(
+        "/thing/ | /there/ print _",
+        "this thing\nthing something there\nthere\nhello!\n",
+        "this thing\nthing something there\nthere\n"
     );
 }

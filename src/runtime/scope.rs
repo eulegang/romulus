@@ -99,4 +99,17 @@ impl Scope {
 
         scope
     }
+
+    /// Picks specific from this scope to make a subscope
+    pub fn pick(&self, keys: &[String]) -> Scope {
+        let mut scope = Scope::new();
+
+        for key in keys {
+            if let Some(value) = self.local.get(key) {
+                scope.set(key.to_owned(), value.to_owned());
+            }
+        }
+
+        scope
+    }
 }

@@ -1,6 +1,6 @@
 use crate::ast::*;
 
-pub(super) trait ScopeProvider {
+pub(crate) trait ScopeProvider {
     fn provides(&self) -> Vec<String>;
 }
 
@@ -18,6 +18,18 @@ impl ScopeProvider for Selector {
                 vars.extend(rh.provides());
                 vars.dedup();
                 vars
+            }
+
+            Disjunction(lh, rh) => {
+                let mut common = Vec::new();
+                let r_set = rh.provides();
+                for l in lh.provides() {
+                    if r_set.contains(&l) {
+                        common.push(l);
+                    }
+                }
+
+                common
             }
         }
     }
