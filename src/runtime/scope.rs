@@ -1,6 +1,6 @@
 use regex::{Captures, Regex};
 use std::collections::HashMap;
-use std::ops::AddAssign;
+use std::ops::{Add, AddAssign};
 
 /// A scope containing variables
 #[derive(Clone, Default)]
@@ -74,6 +74,17 @@ impl AddAssign for Scope {
         for (key, value) in other.local {
             self.local.insert(key, value);
         }
+    }
+}
+
+impl Add for Scope {
+    type Output = Scope;
+    fn add(self, other: Scope) -> Scope {
+        let mut result = Scope::default();
+        result += self;
+        result += other;
+
+        result
     }
 }
 

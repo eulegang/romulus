@@ -13,6 +13,7 @@ impl ScopeProvider for ast::Selector {
             Range(range_node) => range_node.scope(env),
             Pattern(pattern_match_node) => pattern_match_node.scope(env),
             Negate(_) => Scope::default(),
+            Conjunction(lh, rh) => lh.scope(env) + rh.scope(env),
         }
     }
 }

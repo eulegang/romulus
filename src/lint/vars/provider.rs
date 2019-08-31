@@ -13,6 +13,12 @@ impl ScopeProvider for Selector {
             Range(r) => r.provides(),
             Pattern(p) => p.provides(),
             Negate(_) => vec![],
+            Conjunction(lh, rh) => {
+                let mut vars = lh.provides();
+                vars.extend(rh.provides());
+                vars.dedup();
+                vars
+            }
         }
     }
 }

@@ -162,7 +162,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                 tokens.push(Token::Identifier(content));
             }
 
-            '^' | '$' | '!' => {
+            '^' | '$' | '!' | '&' => {
                 tokens.push(Token::Symbol(*ch));
                 it.next();
             }

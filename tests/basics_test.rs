@@ -188,3 +188,18 @@ fn implicit_print() {
 fn disabled_implicit_print() {
     check_output!("subst /hello/, 'goodbye'", "hello world\ncy@\n", "", false);
 }
+
+#[test]
+fn selector_conjunction() {
+    check_output!(
+        "/thing/ & /there/ print _",
+        "this thing\nthing something there\nthere",
+        "thing something there\n"
+    );
+
+    check_output!(
+        "/export (?P<name>[a-zA-Z]+)/ & /= (?P<value>.*)/ print \"${name}: ${value}\"",
+        "export NAME = VALUE\n",
+        "NAME: VALUE\n"
+    );
+}

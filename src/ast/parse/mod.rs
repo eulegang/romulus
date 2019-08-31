@@ -1,7 +1,9 @@
+mod regex;
+mod utils;
+
 use super::*;
 use crate::lex::Token;
-
-mod regex;
+use utils::*;
 
 /// Parses a romulus token stream and creates a romulus AST,
 /// or returns an error message
@@ -25,39 +27,8 @@ macro_rules! guard_eof {
     };
 }
 
-#[inline]
-fn parse_until<T: Parsable>(
-    token: Token,
-    tokens: &[Token],
-    pos: &mut usize,
-) -> Result<Vec<T>, String> {
-    let mut subnodes = Vec::new();
-
-    while Some(&token) != tokens.get(*pos) {
-        subnodes.push(<T>::parse_mut(&tokens, pos)?);
-    }
-
-    expect_token(token, tokens, pos)?;
-
-    Ok(subnodes)
-}
-
-fn expect_token(token: Token, tokens: &[Token], pos: &mut usize) -> Result<(), String> {
-    match tokens.get(*pos) {
-        Some(t) if t == &token => {
-            *pos += 1;
-            Ok(())
-        }
-        Some(t) => Err(format!("expected {:?} but recieved {:?}", token, t)),
-        None => Err("unexpected EOF".to_string()),
-    }
-}
-
-trait Parsable: Sized {
+pub(self) trait Parsable: Sized {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Self, usize), String>;
-    fn try_parse(tokens: &[Token], pos: usize) -> Option<(Self, usize)> {
-        Self::parse(&tokens, pos).ok()
-    }
 
     fn parse_mut(tokens: &[Token], pos: &mut usize) -> Result<Self, String> {
         let (s, next) = Self::parse(tokens, *pos)?;
@@ -129,6 +100,24 @@ impl Parsable for Body {
 
 impl Parsable for Selector {
     fn parse(tokens: &[Token], pos: usize) -> Result<(Selector, usize), String> {
+        Selector::parse_and(tokens, pos)
+    }
+}
+
+impl Selector {
+    fn parse_and(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
+        let (lh, next) = Selector::parse_not(tokens, pos)?;
+
+        if tokens.get(next) == Some(&Token::Symbol('&')) {
+            let (rh, end) = Selector::parse(tokens, next + 1)?;
+
+            Ok((Selector::Conjunction(Box::new(lh), Box::new(rh)), end))
+        } else {
+            Ok((lh, next))
+        }
+    }
+
+    fn parse_not(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
         let mut pos = pos;
         match tokens.get(pos) {
             Some(&Token::Symbol('!')) => {
@@ -140,6 +129,13 @@ impl Parsable for Selector {
                 ))
             }
 
+            _ => Selector::parse_single(tokens, pos),
+        }
+    }
+
+    fn parse_single(tokens: &[Token], pos: usize) -> Result<(Self, usize), String> {
+        let mut pos = pos;
+        match tokens.get(pos) {
             Some(&Token::Paren('[')) => Ok((
                 Selector::Pattern(PatternMatch::parse_mut(tokens, &mut pos)?),
                 pos,

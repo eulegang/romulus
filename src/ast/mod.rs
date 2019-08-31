@@ -143,6 +143,14 @@ pub enum Selector {
     /// }
     /// ```
     Negate(Box<Selector>),
+
+    /// A conjunction of match patterns
+    /// ```text
+    /// 1 & /none/ {
+    ///   print _
+    /// }
+    /// ```
+    Conjunction(Box<Selector>, Box<Selector>),
 }
 
 /// A expression

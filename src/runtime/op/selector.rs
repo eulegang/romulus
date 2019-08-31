@@ -13,6 +13,7 @@ impl Selector for ast::Selector {
             Range(range_node) => range_node.select(env),
             Pattern(pattern_node) => pattern_node.select(env),
             Negate(selector) => !selector.select(env),
+            Conjunction(lh, rh) => lh.select(env) && rh.select(env),
         }
     }
 }

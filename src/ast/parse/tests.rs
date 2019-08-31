@@ -51,6 +51,7 @@ macro_rules! id {
 macro_rules! selector {
     (m$ast: expr) => { Selector::Match($ast) };
     (!$ast: expr) => { Selector::Negate(Box::new($ast)) };
+    (a$lh : expr, $rh : expr) => { Selector::Conjunction(Box::new($lh), Box::new($rh)) };
     (-$start:expr, $end:expr) => { Selector::Range(Range($start, $end)) };
     ($($ast: expr),*) => {
         {
@@ -325,4 +326,19 @@ fn parse_negation() {
             )
         ])
     )
+}
+
+#[test]
+fn parse_conjunction() {
+    let tokens = lex("/thing/ & /other/ print _").unwrap();
+
+    assert_eq!(
+        parse(tokens),
+        Ok(seq![tl
+            Body::Single(
+                selector!(a selector!(m rmatch!("thing")), selector!(m rmatch!("other"))),
+                Statement::Print(Expression::Identifier("_".to_string()))
+            )
+        ])
+    );
 }
