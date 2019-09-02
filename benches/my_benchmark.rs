@@ -41,7 +41,7 @@ fn bench_interpreter_parsing(bench: &mut Criterion) {
 
     bench.bench_function("interpreter parsing", |b| {
         b.iter(|| {
-            Interpreter::builder().expression(prog.to_string());
+            let _ = Interpreter::builder().expression(prog.to_string()).build();
         })
     });
 }
