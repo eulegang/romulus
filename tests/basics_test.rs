@@ -1,57 +1,11 @@
 extern crate regex;
 extern crate romulus;
 
-use regex::Regex;
-use romulus::Interpreter;
-
-macro_rules! check_output {
-    ($prog: expr, $input: expr, $expected: expr) => {{
-        let interpreter = Interpreter::builder()
-            .expression($prog.to_string())
-            .sep(Regex::new(" +").unwrap())
-            .print(true)
-            .build()
-            .unwrap();
-
-        let mut out = Vec::new();
-        let mut sin = $input.as_bytes();
-
-        interpreter.process(&mut sin, &mut out);
-
-        let actual_expected = if cfg!(target_os = "windows") {
-            $expected.replace("\n", "\r\n")
-        } else {
-            $expected.to_string()
-        };
-
-        assert_eq!(String::from_utf8(out).unwrap(), actual_expected);
-    }};
-
-    ($prog: expr, $input: expr, $expected: expr, $implicit: expr) => {{
-        let interpreter = Interpreter::builder()
-            .expression($prog.to_string())
-            .sep(Regex::new(" +").unwrap())
-            .print($implicit)
-            .build()
-            .unwrap();
-
-        let mut out = Vec::new();
-        let mut sin = $input.as_bytes();
-
-        interpreter.process(&mut sin, &mut out);
-
-        let actual_expected = if cfg!(target_os = "windows") {
-            $expected.replace("\n", "\r\n")
-        } else {
-            $expected.to_string()
-        };
-
-        assert_eq!(String::from_utf8(out).unwrap(), actual_expected);
-    }};
-}
+#[macro_use]
+mod common;
 
 #[test]
-fn basic() {
+fn regex_selector() {
     check_output!(
         "/needle/ { print('found it') }",
         "hay\nhay\nhey\nneedle\nhay",
@@ -69,7 +23,7 @@ fn range() {
 }
 
 #[test]
-fn capture() {
+fn selector_capture() {
     check_output!(
         "1 { print('name,type') }\n/pokemon \"(?P<name>.*)\"/,/}/ { /type *= *\"(?P<type>.*)\"/ { print(\"${name},${type}\") } }",
         "pokemon \"Haunter\" {\ntype = \"Ghost\"\n}\npokemon \"Noctowl\" {\ntype = \"Flying\"\n}\n",
@@ -80,22 +34,24 @@ fn capture() {
 #[test]
 fn symbolic_anchors() {
     check_output!(
-        "^ { print 'first' }; // { print _ }; $ { print 'last'  }",
+        "^ { print 'first' }; print _ $ { print 'last'  }",
         "middle",
         "first\nmiddle\nlast\n"
     );
+}
 
+#[test]
+fn symbolic_anchors_empty_input() {
     check_output!(
-        "^ { print 'first' }; print _; $ { print 'last'  }",
-        "middle",
-        "first\nmiddle\nlast\n"
-    );
-
-    check_output!(
-        "^ { print('first') }; // { print _ }; $ { print('last') }",
+        "^ print('first') print _ $ print('last') ",
         "",
         "first\nlast\n"
     );
+}
+
+#[test]
+fn symbolic_anchors_print_removes_implicit_print() {
+    check_output!("^ print 'first' $ print 'last'", "middle", "first\nlast\n");
 }
 
 #[test]
@@ -171,13 +127,16 @@ fn set() {
 }
 
 #[test]
-fn negation() {
+fn basic_negation() {
     check_output!(
         "!1 print _",
         "hello\nworld\nnice\nto\nmeet\nyou!\n",
         "world\nnice\nto\nmeet\nyou!\n"
     );
+}
 
+#[test]
+fn negation_range_interaction() {
     check_output!(
         "! 2,/meet/ print _",
         "hello\nworld\nnice\nto\nmeet\nyou!\n",
@@ -200,30 +159,45 @@ fn disabled_implicit_print() {
 }
 
 #[test]
-fn selector_conjunction() {
+fn basic_conj() {
     check_output!(
         "/thing/ & /there/ print _",
         "this thing\nthing something there\nthere\n",
         "thing something there\n"
     );
+}
 
+#[test]
+fn conj_scope() {
     check_output!(
         "/export (?P<name>[a-zA-Z]+)/ & /= (?P<value>.*)/ print \"${name}: ${value}\"",
         "export NAME = VALUE\n",
         "NAME: VALUE\n"
     );
+}
 
+#[test]
+fn conj_range_interaction() {
     check_output!(
         "/th/ & 2,5 { print _ }",
         "first\nsecond\nthird\nfourth\nfifth\nsexth\nseventh\nninth\ntenth\n",
         "third\nfourth\n"
-    )
+    );
+}
+
+#[test]
+fn dist_range_interaction() {
+    check_output!(
+        "/th/ | 3,5 { print _ }",
+        "first\nsecond\nthird\nfourth\nbreaking\npattern\nfor\ntest\n",
+        "third\nfourth\n"
+    );
 }
 
 #[test]
 fn selector_disjunction() {
     check_output!(
-        "/thing/ | /there/ print _",
+        "/thing/ | /here/ print _",
         "this thing\nthing something there\nthere\nhello!\n",
         "this thing\nthing something there\nthere\n"
     );
