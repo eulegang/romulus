@@ -39,7 +39,7 @@ impl Interpreter {
 
         while let Some(Ok(line)) = iter.next() {
             env.lineno += 1;
-            env.event = Event::Line(line.to_string());
+            env.event = Event::Line(line);
 
             self.node.persist_scope(&mut env);
             self.node.perform(&mut env);
@@ -49,12 +49,7 @@ impl Interpreter {
             }
 
             if implicit_print && self.implicit_print {
-                let line = match &env.event {
-                    Event::Line(line) => line.clone(),
-                    _ => unreachable!(),
-                };
-
-                env.print(&mut format!("{}{}", line, nl!()).as_bytes());
+                env.print_event();
             }
         }
 

@@ -119,4 +119,14 @@ impl<'a> Environment<'a> {
 
         self.event = Event::Line(handle(self, line));
     }
+
+    pub(crate) fn print_event(&mut self) {
+        match &self.event {
+            Event::Line(line) => {
+                let buf = format!("{}{}", line, nl!());
+                let _ = copy(&mut buf.as_bytes(), self.out);
+            }
+            _ => (),
+        }
+    }
 }
