@@ -212,6 +212,12 @@ fn selector_conjunction() {
         "export NAME = VALUE\n",
         "NAME: VALUE\n"
     );
+
+    check_output!(
+        "/th/ & 2,5 { print _ }",
+        "first\nsecond\nthird\nfourth\nfifth\nsexth\nseventh\nninth\ntenth\n",
+        "third\nfourth\n"
+    )
 }
 
 #[test]
