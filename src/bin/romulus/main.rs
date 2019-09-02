@@ -14,7 +14,6 @@ use ansi_term::Colour::*;
 use clap::{App, Arg, ArgGroup, ArgMatches};
 use regex::Regex;
 use romulus::Interpreter;
-use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::{stdin, stdout, BufReader, Write};
 use std::process;
@@ -72,7 +71,6 @@ fn main() {
                 .long("sep")
                 .env("RSEP")
                 .takes_value(true)
-                .default_value(" +")
                 .help("sepeartes patterns in a line"),
         )
         .arg(
@@ -118,24 +116,33 @@ fn main() {
 }
 
 fn create_interpreter(matches: &ArgMatches) -> Interpreter {
-    let sep = match Regex::new(matches.value_of("sep").unwrap()) {
-        Ok(regex) => regex,
-        Err(msg) => error!("Error parsing sep: {}", msg),
-    };
+    let mut builder = Interpreter::builder();
+
+    if let Some(sep) = matches.value_of("sep") {
+        match Regex::new(sep) {
+            Ok(regex) => {
+                let _ = builder.sep(regex);
+            }
+            Err(msg) => error!("Error parsing sep: {}", msg),
+        }
+    }
 
     if let Some(expr) = matches.value_of("expr") {
-        return ok_or_exit(Interpreter::new(expr, sep, !matches.is_present("explicit")));
+        builder.expression(expr.to_string());
+    }
+
+    if matches.is_present("explicit") {
+        builder.print(false);
     }
 
     if let Some(filename) = matches.value_of("file") {
-        return ok_or_exit(Interpreter::file(
-            filename,
-            sep,
-            !matches.is_present("explicit"),
-        ));
+        builder.filename(filename.to_string());
     }
 
-    unreachable!()
+    match builder.build() {
+        Ok(interpreter) => interpreter,
+        Err(msg) => error!("Failed to build interpreter: {}", msg),
+    }
 }
 
 fn process_inplace<'a, I: Iterator<Item = &'a str>>(
@@ -197,14 +204,6 @@ fn process_streams(interpreter: Interpreter, matches: &ArgMatches) {
         let mut sin_lock = sin.lock();
 
         interpreter.process(&mut sin_lock, &mut output);
-    }
-}
-
-#[inline]
-fn ok_or_exit<T, E: Display>(result: Result<T, E>) -> T {
-    match result {
-        Ok(t) => t,
-        Err(msg) => error!("{}", msg),
     }
 }
 

@@ -54,4 +54,4 @@ mod lint;
 mod runtime;
 
 pub use features::*;
-pub use interpreter::Interpreter;
+pub use interpreter::{Builder, Interpreter};

@@ -6,7 +6,12 @@ use romulus::Interpreter;
 
 macro_rules! check_output {
     ($prog: expr, $input: expr, $expected: expr) => {{
-        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), true).unwrap();
+        let interpreter = Interpreter::builder()
+            .expression($prog.to_string())
+            .sep(Regex::new(" +").unwrap())
+            .print(true)
+            .build()
+            .unwrap();
 
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
@@ -23,7 +28,12 @@ macro_rules! check_output {
     }};
 
     ($prog: expr, $input: expr, $expected: expr, $implicit: expr) => {{
-        let interpreter = Interpreter::new($prog, Regex::new(" +").unwrap(), $implicit).unwrap();
+        let interpreter = Interpreter::builder()
+            .expression($prog.to_string())
+            .sep(Regex::new(" +").unwrap())
+            .print($implicit)
+            .build()
+            .unwrap();
 
         let mut out = Vec::new();
         let mut sin = $input.as_bytes();
