@@ -346,10 +346,8 @@ fn parse_conjunction() {
 
 #[test]
 fn parse_disjunction() {
-    let tokens = lex("/thing/ | /other/ print _").unwrap();
-
     assert_eq!(
-        parse(tokens),
+        parse(lex("/thing/ | /other/ print _").unwrap()),
         Ok(seq![tl
             Body::Single(
                 selector!(o selector!(m rmatch!("thing")), selector!(m rmatch!("other"))),

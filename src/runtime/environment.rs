@@ -6,7 +6,7 @@ use regex::{Regex, Split};
 use std::io::{copy, Read, Write};
 
 /// An event to be processed
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Event {
     /// The beginning of processing
     Begin,

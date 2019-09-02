@@ -8,24 +8,27 @@ pub trait Selector {
 impl Selector for ast::Selector {
     fn select(&self, env: &mut Environment) -> bool {
         use ast::Selector::*;
+
         match self {
             Match(match_node) => match_node.select(env),
             Range(range_node) => range_node.select(env),
             Pattern(pattern_node) => pattern_node.select(env),
             Negate(selector) => !selector.select(env),
-            Conjunction(lh, rh) => {
-                // Eagerly evauting since ranges are stateful
-                let l = lh.select(env);
-                let r = rh.select(env);
-
-                l && r
-            }
             Disjunction(lh, rh) => {
-                // Eagerly evauting since ranges are stateful
-                let l = lh.select(env);
-                let r = rh.select(env);
-
-                l || r
+                if lh.select(env) {
+                    env.tracker.skip(rh.num_ranges());
+                    true
+                } else {
+                    rh.select(env)
+                }
+            }
+            Conjunction(lh, rh) => {
+                if lh.select(env) {
+                    rh.select(env)
+                } else {
+                    env.tracker.skip(rh.num_ranges());
+                    false
+                }
             }
         }
     }
@@ -33,20 +36,6 @@ impl Selector for ast::Selector {
 
 impl Selector for ast::Range {
     fn select(&self, env: &mut Environment) -> bool {
-        let ast::Range(start, end) = self;
-
-        if !env.tracker.in_range() {
-            if start.select(env) {
-                env.tracker.set(start.scope(env));
-            }
-        } else if end.select(env) {
-            env.tracker.clear();
-
-            if start.select(env) {
-                env.tracker.set(start.scope(env));
-            }
-        };
-
         let next = env.tracker.in_range();
         env.tracker.next();
         next

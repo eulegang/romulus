@@ -1,4 +1,4 @@
-use crate::runtime::op::{Operation, SigStatement};
+use crate::runtime::op::{Operation, ScopePersister, SigStatement};
 use crate::runtime::{Environment, Event, Scope};
 use crate::{ast, lex, lint};
 
@@ -41,6 +41,7 @@ impl Interpreter {
             env.lineno += 1;
             env.event = Event::Line(line.to_string());
 
+            self.node.persist_scope(&mut env);
             self.node.perform(&mut env);
 
             if env.finished() {

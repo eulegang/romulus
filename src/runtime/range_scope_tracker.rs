@@ -1,5 +1,6 @@
 use super::Scope;
 
+#[derive(Debug)]
 pub(crate) struct RangeScopeTracker {
     states: Vec<Option<Scope>>,
     pos: usize,
@@ -18,7 +19,13 @@ impl RangeScopeTracker {
     }
 
     pub(crate) fn next(&mut self) {
-        self.pos = (self.pos + 1) % self.states.len();
+        self.skip(1)
+    }
+
+    pub(crate) fn skip(&mut self, amount: usize) {
+        if self.states.len() != 0 {
+            self.pos = (self.pos + amount) % self.states.len();
+        }
     }
 
     pub(crate) fn get(&self) -> &Option<Scope> {
