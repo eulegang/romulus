@@ -23,7 +23,7 @@ impl RangeScopeTracker {
     }
 
     pub(crate) fn skip(&mut self, amount: usize) {
-        if self.states.len() != 0 {
+        if !self.states.is_empty() {
             self.pos = (self.pos + amount) % self.states.len();
         }
     }

@@ -121,12 +121,9 @@ impl<'a> Environment<'a> {
     }
 
     pub(crate) fn print_event(&mut self) {
-        match &self.event {
-            Event::Line(line) => {
-                let buf = format!("{}{}", line, nl!());
-                let _ = copy(&mut buf.as_bytes(), self.out);
-            }
-            _ => (),
+        if let Event::Line(line) = &self.event {
+            let buf = format!("{}{}", line, nl!());
+            let _ = copy(&mut buf.as_bytes(), self.out);
         }
     }
 }
