@@ -91,13 +91,9 @@ impl Add for Scope {
 impl Scope {
     /// Generate a scope from os environmental variables
     pub fn env() -> Scope {
-        let mut scope = Scope::new();
+        let local = std::env::vars().collect::<HashMap<String, String>>();
 
-        for (key, value) in std::env::vars() {
-            scope.set(key, value);
-        }
-
-        scope
+        Scope { local }
     }
 
     /// Picks specific from this scope to make a subscope
