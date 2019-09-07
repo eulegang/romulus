@@ -89,9 +89,9 @@ pub fn lex(buf: &str) -> Result<Vec<Token>, String> {
 /// Lexes a given string and returns all tokens found
 pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
-    let mut it = buf.chars().peekable();
+    let mut it = buf.chars().enumerate().peekable();
 
-    while let Some(ch) = it.peek() {
+    while let Some((_, ch)) = it.peek() {
         match ch {
             '0'..='9' => {
                 let nums = chomp_range(&mut it, '0'..='9');
@@ -127,7 +127,8 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                 it.next();
                 let chars = chomp_until_escaped(&mut it, '/', false)?;
                 let pattern = chars.iter().cloned().collect::<String>();
-                if Some('/') != it.next() {
+                if let Some((_, '/')) = it.next() {
+                } else {
                     return Err("expected character: '/'".to_string());
                 }
 
