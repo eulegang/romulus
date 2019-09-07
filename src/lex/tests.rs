@@ -38,7 +38,7 @@ fn test_lex_regex() {
 fn test_lex_comment() {
     let tokens = vec![
         Token::Number(42),
-        Token::Comment("some comment".to_string()),
+        Token::Comment("some comment"),
         Token::Newline,
         Token::Regex("test *".to_string(), "i".to_string()),
     ];

@@ -10,7 +10,7 @@ use utils::*;
 /// Represents the individual grammer entity in romulus
 ///
 #[derive(Debug, PartialEq)]
-pub enum Token {
+pub enum Token<'a> {
     /// Represents (, {, [, ], }, )
     Paren(char),
 
@@ -33,7 +33,7 @@ pub enum Token {
     ///
     /// Currently only line comments are supported <br>
     /// any characters after `#` are apart of a comment
-    Comment(String),
+    Comment(&'a str),
 
     /// Represents a variable identifier
     ///
@@ -56,7 +56,7 @@ pub enum Token {
     Comma,
 }
 
-impl Token {
+impl Token<'_> {
     fn significant(&self) -> bool {
         match self {
             Token::Number(_) => true,
@@ -100,11 +100,12 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let x = [&lower, &upper, &number_chars];
     let ident_chars = (Multi(&x), under_score);
 
-    while let Some((_, ch)) = it.peek() {
+    while let Some((start, ch)) = it.peek() {
+        let start = *start;
         match ch {
             '0'..='9' => {
-                let chars = chomp_vec(&number_chars, &mut it);
-                tokens.push(Token::Number(get_number(chars)));
+                let end = chomp(&number_chars, &mut it);
+                tokens.push(Token::Number(get_number(&buf[start..end])));
             }
 
             '{' | '[' | '(' | '}' | ']' | ')' => {
@@ -123,8 +124,8 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '#' => {
                 it.next();
-                let comment_chars = chomp_until_vec(&newline_chars, &mut it);
-                tokens.push(Token::Comment(comment_chars.iter().collect::<String>()));
+                let end = chomp_until(&newline_chars, &mut it);
+                tokens.push(Token::Comment(&buf[start + 1..end]));
             }
 
             ',' => {

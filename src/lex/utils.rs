@@ -11,15 +11,36 @@ pub fn chomp<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> usiz
 where
     Iter: Iterator<Item = (usize, char)>,
 {
+    let mut cur = 0;
     while let Some((idx, ch)) = peekable.peek() {
+        cur = *idx;
+
         if !chomper.accept(*ch) {
-            return *idx;
+            return cur;
         }
 
         peekable.next();
     }
 
-    0
+    cur + 1
+}
+
+pub fn chomp_until<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> usize
+where
+    Iter: Iterator<Item = (usize, char)>,
+{
+    let mut cur = 0;
+    while let Some((idx, ch)) = peekable.peek() {
+        cur = *idx;
+
+        if chomper.accept(*ch) {
+            return cur;
+        }
+
+        peekable.next();
+    }
+
+    cur + 1
 }
 
 pub fn chomp_vec<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> Vec<char>
@@ -30,24 +51,6 @@ where
 
     while let Some((_, ch)) = peekable.peek() {
         if chomper.accept(*ch) {
-            accepted.push(*ch);
-            peekable.next();
-        } else {
-            break;
-        }
-    }
-
-    accepted
-}
-
-pub fn chomp_until_vec<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> Vec<char>
-where
-    Iter: Iterator<Item = (usize, char)>,
-{
-    let mut accepted = Vec::new();
-
-    while let Some((_, ch)) = peekable.peek() {
-        if !chomper.accept(*ch) {
             accepted.push(*ch);
             peekable.next();
         } else {
@@ -151,9 +154,9 @@ pub fn chomp_until_escaped<T: Iterator<Item = (usize, char)>>(
 
 /// Evaulate the character buffer as a number
 #[inline]
-pub fn get_number(vec: Vec<char>) -> i64 {
+pub fn get_number(vec: &str) -> i64 {
     let mut buffer = 0;
-    for ch in vec {
+    for ch in vec.chars() {
         let digit = ch.to_string().parse::<i64>().unwrap();
 
         buffer = buffer * 10 + digit;
