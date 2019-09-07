@@ -43,11 +43,11 @@ where
     cur + 1
 }
 
-pub fn chomp_vec<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> Vec<char>
+pub fn chomp_str<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> String
 where
     Iter: Iterator<Item = (usize, char)>,
 {
-    let mut accepted = Vec::new();
+    let mut accepted = String::new();
 
     while let Some((_, ch)) = peekable.peek() {
         if chomper.accept(*ch) {
@@ -120,8 +120,8 @@ pub fn chomp_until_escaped<T: Iterator<Item = (usize, char)>>(
     iter: &mut Peekable<T>,
     terminator: char,
     evaluates: bool,
-) -> Result<Vec<char>, String> {
-    let mut accepted: Vec<char> = Vec::new();
+) -> Result<String, String> {
+    let mut accepted = String::new();
 
     while let Some((_, ch)) = &mut iter.peek() {
         let owned: char = *ch;

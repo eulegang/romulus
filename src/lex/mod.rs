@@ -136,39 +136,35 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
             '/' => {
                 it.next();
                 let chars = chomp_until_escaped(&mut it, '/', false)?;
-                let pattern = chars.iter().cloned().collect::<String>();
+                let pattern = chars;
                 if let Some((_, '/')) = it.next() {
                 } else {
                     return Err("expected character: '/'".to_string());
                 }
 
-                let flag_chars = chomp_vec(&regexflag_chars, &mut it);
-                let flags = flag_chars.iter().cloned().collect::<String>();
+                let flags = chomp_str(&regexflag_chars, &mut it);
 
                 tokens.push(Token::Regex(pattern, flags));
             }
 
             '"' => {
                 it.next();
-                let chars = chomp_until_escaped(&mut it, '"', true)?;
+                let content = chomp_until_escaped(&mut it, '"', true)?;
                 it.next();
-                let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::String(content, true));
             }
 
             '\'' => {
                 it.next();
-                let chars = chomp_until_escaped(&mut it, '\'', false)?;
+                let content = chomp_until_escaped(&mut it, '\'', false)?;
                 it.next();
-                let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::String(content, false));
             }
 
             '_' | 'a'..='z' | 'A'..='Z' => {
-                let chars = chomp_vec(&ident_chars, &mut it);
-                let content = chars.iter().cloned().collect::<String>();
+                let content = chomp_str(&ident_chars, &mut it);
 
                 tokens.push(Token::Identifier(content));
             }
