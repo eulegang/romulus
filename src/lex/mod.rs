@@ -91,11 +91,20 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut it = buf.chars().enumerate().peekable();
 
+    let lower = 'a'..='z';
+    let upper = 'A'..='Z';
+    let under_score = &['_'];
+    let newline_chars = &['\n', '\r', ';'];
+    let number_chars = '0'..='9';
+    let regexflag_chars = &['i', 'U'];
+    let x = [&lower, &upper, &number_chars];
+    let ident_chars = (Multi(&x), under_score);
+
     while let Some((_, ch)) = it.peek() {
         match ch {
             '0'..='9' => {
-                let nums = chomp_range(&mut it, '0'..='9');
-                tokens.push(Token::Number(get_number(nums)));
+                let chars = chomp_vec(&number_chars, &mut it);
+                tokens.push(Token::Number(get_number(chars)));
             }
 
             '{' | '[' | '(' | '}' | ']' | ')' => {
@@ -108,13 +117,13 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
             }
 
             '\n' | '\r' | ';' => {
-                chomp_set(&mut it, &['\n', '\r', ';']);
+                chomp(&newline_chars, &mut it);
                 tokens.push(Token::Newline);
             }
 
             '#' => {
                 it.next();
-                let comment_chars = chomp_until_set(&mut it, &['\n', '\n', ';']);
+                let comment_chars = chomp_until_vec(&newline_chars, &mut it);
                 tokens.push(Token::Comment(comment_chars.iter().collect::<String>()));
             }
 
@@ -132,7 +141,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
                     return Err("expected character: '/'".to_string());
                 }
 
-                let flag_chars = chomp_set(&mut it, &['i', 'U']);
+                let flag_chars = chomp_vec(&regexflag_chars, &mut it);
                 let flags = flag_chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::Regex(pattern, flags));
@@ -157,7 +166,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
             }
 
             '_' | 'a'..='z' | 'A'..='Z' => {
-                let chars = chomp_multi(&mut it, &['_'], &['a'..='z', 'A'..='Z', '0'..='9']);
+                let chars = chomp_vec(&ident_chars, &mut it);
                 let content = chars.iter().cloned().collect::<String>();
 
                 tokens.push(Token::Identifier(content));

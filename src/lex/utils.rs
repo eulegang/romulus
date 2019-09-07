@@ -3,19 +3,35 @@
 use std::iter::Peekable;
 use std::ops::RangeInclusive;
 
-/// Gathers characters while the characters are in
-/// the accepted set of characters
-#[inline]
-pub fn chomp_range<T: Iterator<Item = (usize, char)>>(
-    iter: &mut Peekable<T>,
-    accept: RangeInclusive<char>,
-) -> Vec<char> {
+pub trait Chomper {
+    fn accept(&self, ch: char) -> bool;
+}
+
+pub fn chomp<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> usize
+where
+    Iter: Iterator<Item = (usize, char)>,
+{
+    while let Some((idx, ch)) = peekable.peek() {
+        if !chomper.accept(*ch) {
+            return *idx;
+        }
+
+        peekable.next();
+    }
+
+    0
+}
+
+pub fn chomp_vec<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> Vec<char>
+where
+    Iter: Iterator<Item = (usize, char)>,
+{
     let mut accepted = Vec::new();
 
-    while let Some((_, ch)) = &mut iter.peek() {
-        if accept.contains(ch) {
+    while let Some((_, ch)) = peekable.peek() {
+        if chomper.accept(*ch) {
             accepted.push(*ch);
-            iter.next();
+            peekable.next();
         } else {
             break;
         }
@@ -24,59 +40,72 @@ pub fn chomp_range<T: Iterator<Item = (usize, char)>>(
     accepted
 }
 
-/// Gathers characters while the current char is in chars or
-/// in one of the ranges in accepts
-#[inline]
-pub fn chomp_multi<T: Iterator<Item = (usize, char)>>(
-    iter: &mut Peekable<T>,
-    chars: &[char],
-    accepts: &[RangeInclusive<char>],
-) -> Vec<char> {
+pub fn chomp_until_vec<Iter>(chomper: &dyn Chomper, peekable: &mut Peekable<Iter>) -> Vec<char>
+where
+    Iter: Iterator<Item = (usize, char)>,
+{
     let mut accepted = Vec::new();
 
-    'base: while let Some((_, ch)) = &mut iter.peek() {
-        let owned = *ch;
-
-        if chars.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-            continue;
+    while let Some((_, ch)) = peekable.peek() {
+        if !chomper.accept(*ch) {
+            accepted.push(*ch);
+            peekable.next();
+        } else {
+            break;
         }
+    }
 
-        for accept in accepts {
-            if accept.contains(&owned) {
-                accepted.push(owned);
-                iter.next();
-                continue 'base;
+    accepted
+}
+
+pub struct Multi<'a, C: Chomper>(pub &'a [&'a C]);
+
+impl Chomper for RangeInclusive<char> {
+    fn accept(&self, ch: char) -> bool {
+        self.contains(&ch)
+    }
+}
+
+impl Chomper for [char] {
+    fn accept(&self, ch: char) -> bool {
+        self.contains(&ch)
+    }
+}
+
+impl Chomper for &[char; 1] {
+    fn accept(&self, ch: char) -> bool {
+        self.contains(&ch)
+    }
+}
+
+impl Chomper for &[char; 2] {
+    fn accept(&self, ch: char) -> bool {
+        self.contains(&ch)
+    }
+}
+
+impl Chomper for &[char; 3] {
+    fn accept(&self, ch: char) -> bool {
+        self.contains(&ch)
+    }
+}
+
+impl<C: Chomper> Chomper for Multi<'_, C> {
+    fn accept(&self, ch: char) -> bool {
+        for sub in self.0 {
+            if sub.accept(ch) {
+                return true;
             }
         }
 
-        break;
+        false
     }
-
-    accepted
 }
 
-/// gathers characters while the current char is in the accept set
-#[inline]
-pub fn chomp_set<T: Iterator<Item = (usize, char)>>(
-    iter: &mut Peekable<T>,
-    accept: &[char],
-) -> Vec<char> {
-    let mut accepted = Vec::new();
-
-    while let Some((_, ch)) = &mut iter.peek() {
-        let owned: char = *ch;
-
-        if accept.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-        } else {
-            break;
-        }
+impl<A: Chomper, B: Chomper> Chomper for (A, B) {
+    fn accept(&self, ch: char) -> bool {
+        self.0.accept(ch) || self.1.accept(ch)
     }
-
-    accepted
 }
 
 /// gather characters until the terminating character
@@ -118,28 +147,6 @@ pub fn chomp_until_escaped<T: Iterator<Item = (usize, char)>>(
     }
 
     Ok(accepted)
-}
-
-/// Gather characters until a character in the accept set is found
-#[inline]
-pub fn chomp_until_set<T: Iterator<Item = (usize, char)>>(
-    iter: &mut Peekable<T>,
-    accept: &[char],
-) -> Vec<char> {
-    let mut accepted: Vec<char> = Vec::new();
-
-    while let Some((_, ch)) = &mut iter.peek() {
-        let owned: char = *ch;
-
-        if !accept.contains(&owned) {
-            accepted.push(owned);
-            iter.next();
-        } else {
-            break;
-        }
-    }
-
-    accepted
 }
 
 /// Evaulate the character buffer as a number
