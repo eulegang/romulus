@@ -1,7 +1,19 @@
 use crate::ast::*;
+use regex::Regex;
 
 pub(crate) trait ScopeProvider {
     fn provides(&self) -> Vec<String>;
+}
+
+pub(crate) fn regex_provides(regex: &Regex) -> Vec<String> {
+    let mut results = Vec::new();
+    for o in regex.capture_names() {
+        if let Some(name) = o {
+            results.push(name.to_string());
+        }
+    }
+
+    results
 }
 
 impl ScopeProvider for Selector {
@@ -40,11 +52,7 @@ impl ScopeProvider for Match {
         let mut results = Vec::new();
 
         if let Match::Regex(regex) = self {
-            for o in regex.capture_names() {
-                if let Some(name) = o {
-                    results.push(name.to_string());
-                }
-            }
+            results.extend(regex_provides(regex))
         }
 
         results
@@ -74,16 +82,7 @@ impl ScopeProvider for Pattern {
         match self {
             String(_, _) => Vec::new(),
             Identifier(s) => vec![s.clone()],
-            Regex(regex) => {
-                let mut results = Vec::new();
-                for o in regex.capture_names() {
-                    if let Some(name) = o {
-                        results.push(name.to_string());
-                    }
-                }
-
-                results
-            }
+            Regex(regex) => regex_provides(&regex),
         }
     }
 }

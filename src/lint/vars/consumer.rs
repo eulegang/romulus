@@ -1,5 +1,17 @@
 use crate::ast::*;
+use crate::lint::vars::provider::regex_provides;
 use crate::runtime::op::interpolated_variables;
+
+fn sub(base: Vec<String>, sub: Vec<String>) -> Vec<String> {
+    let mut buf = Vec::with_capacity(base.len());
+
+    for b in base {
+        if !sub.contains(&b) {
+            buf.push(b)
+        }
+    }
+    buf
+}
 
 pub(super) trait ScopeConsumer {
     fn consumes(&self) -> Vec<String>;
@@ -12,8 +24,8 @@ impl ScopeConsumer for Statement {
         match self {
             Print(expr) => expr.consumes(),
             Quit => vec![],
-            Subst(_, expr) => expr.consumes(),
-            Gsubst(_, expr) => expr.consumes(),
+            Subst(regex, expr) => sub(expr.consumes(), regex_provides(regex)),
+            Gsubst(regex, expr) => sub(expr.consumes(), regex_provides(regex)),
             Read(expr) => expr.consumes(),
             Write(expr) => expr.consumes(),
             Exec(expr) => expr.consumes(),
