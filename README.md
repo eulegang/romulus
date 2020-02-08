@@ -27,6 +27,12 @@ given a executable file parse\_ifconfig such as
 
 running `ifconfig | parse_ifconfig` should yield your current network interfaces which have ips
 
+Running the following prints all the hashes of the docker images that have kube in the name
+
+```
+docker images | romulus -e '2,$ & [/kube/, _, hash] print hash'
+```
+
 ## Installation
 
 Currenty the only supported way to install romulus is to install by source code
