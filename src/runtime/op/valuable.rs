@@ -26,7 +26,7 @@ impl Valuable for Expression {
         match self {
             Expression::String(content, interpolatable) => {
                 if *interpolatable {
-                    interpolate(content, env).to_string()
+                    interpolate(content, env)
                 } else {
                     content.to_string()
                 }
@@ -34,7 +34,7 @@ impl Valuable for Expression {
 
             Expression::Identifier(name) => {
                 if let Some(value) = env.lookup(name) {
-                    value.to_string()
+                    value
                 } else {
                     String::new()
                 }
