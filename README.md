@@ -1,7 +1,7 @@
 
 # Romulus
 
-A mondern alternative to sed
+A modern alternative to sed
 
 [![Build Status](https://travis-ci.org/eulegang/romulus.svg?branch=master)](https://travis-ci.org/eulegang/romulus)
 
@@ -25,7 +25,7 @@ given a executable file parse\_ifconfig such as
 }
 ```
 
-running `ifconfig | parse\_ifconfig` should yield your current network interfaces which have ips
+running `ifconfig | parse_ifconfig` should yield your current network interfaces which have ips
 
 ## Installation
 
