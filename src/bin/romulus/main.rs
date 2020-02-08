@@ -171,7 +171,13 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         }
 
         if let Err(err) = fout.persist(input) {
-            error!("unable to replace {}: {}", input, err);
+            if err.error.kind() == std::io::ErrorKind::Other { // try to cp it manually
+                if let Err(err) = std::fs::copy(err.file.path(), input) {
+                    error!("unable to replace {}: {}", input, err);
+                }
+            } else {
+                error!("unable to replace {}: {}", input, err);
+            }
         };
     }
 }
