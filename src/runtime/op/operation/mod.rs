@@ -72,6 +72,8 @@ impl Operation for ast::Statement {
             Exec(expr) => exec(expr, env),
             Append(expr) => append(expr, env),
             Set(expr) => set(expr, env),
+
+            #[cfg(feature = "bind")]
             Bind(id) => bind(id, env),
         }
     }

@@ -7,6 +7,7 @@ pub trait Globals {
 impl Globals for Statement {
     fn globals(&self) -> Vec<String> {
         match self {
+            #[cfg(feature = "bind")]
             Statement::Bind(id) => vec![id.to_string()],
             _ => vec![],
         }

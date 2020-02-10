@@ -135,6 +135,7 @@ impl<'a> Environment<'a> {
         }
     }
 
+    #[cfg(feature = "bind")]
     pub(crate) fn bind_variable(&mut self, key: &str) {
         if let Some(value) = self.lookup(key) {
             self.globals.insert(key.to_string(), value);

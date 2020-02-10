@@ -379,6 +379,7 @@ impl Parsable for Statement {
                 (Statement::Set(expr), p)
             }
 
+            #[cfg(feature = "bind")]
             "bind" => {
                 let (id, p) = parse_id(tokens, param_pos)?;
                 (Statement::Bind(id), p)
@@ -422,6 +423,7 @@ impl Parsable for Expression {
     }
 }
 
+#[cfg(feature = "bind")]
 fn parse_id(tokens: &[Token], pos: usize) -> Result<(String, usize), String> {
     let token = guard_eof!(tokens.get(pos));
 

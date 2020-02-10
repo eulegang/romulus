@@ -23,6 +23,7 @@ default = [ 'envvar', 'color' ]
 envvar = []
 color = []
 stdin-tty = []
+bind = []
 
 [dependencies]
 regex = "1"

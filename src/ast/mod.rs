@@ -205,6 +205,7 @@ pub enum Statement {
     Set(Expression),
 
     /// Binds a global variable
+    #[cfg(feature = "bind")]
     Bind(String),
 }
 

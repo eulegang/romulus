@@ -31,6 +31,8 @@ impl ScopeConsumer for Statement {
             Exec(expr) => expr.consumes(),
             Append(expr) => expr.consumes(),
             Set(expr) => expr.consumes(),
+
+            #[cfg(feature = "bind")]
             Bind(id) => vec![id.to_string()],
         }
     }

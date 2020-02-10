@@ -11,5 +11,10 @@ macro_rules! feature {
 
 /// Gives a record of which features romulus was installed with
 pub fn features() -> Vec<(bool, String)> {
-    vec![feature!("color"), feature!("envvar"), feature!("stdin-tty")]
+    vec![
+        feature!("color"),
+        feature!("envvar"),
+        feature!("stdin-tty"),
+        feature!("bind"),
+    ]
 }

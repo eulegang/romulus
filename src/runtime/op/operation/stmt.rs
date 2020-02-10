@@ -91,6 +91,7 @@ pub fn set(expr: &Expression, env: &mut Environment) {
     env.replace_line(|env, _| expr.to_value(env))
 }
 
+#[cfg(feature = "bind")]
 pub fn bind(id: &str, env: &mut Environment) {
     env.bind_variable(id);
 }
