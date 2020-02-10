@@ -203,6 +203,9 @@ pub enum Statement {
 
     /// Sets the current line to an expression
     Set(Expression),
+
+    /// Binds a global variable
+    Bind(String),
 }
 
 /// A guarded statement or a plain one

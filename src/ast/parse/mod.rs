@@ -379,6 +379,11 @@ impl Parsable for Statement {
                 (Statement::Set(expr), p)
             }
 
+            "bind" => {
+                let (id, p) = parse_id(tokens, param_pos)?;
+                (Statement::Bind(id), p)
+            }
+
             _ => {
                 return Err(format!(
                     "expected a valid statement but received invalid one {:?}",
@@ -415,6 +420,19 @@ impl Parsable for Expression {
             tokens.get(pos)
         ))
     }
+}
+
+fn parse_id(tokens: &[Token], pos: usize) -> Result<(String, usize), String> {
+    let token = guard_eof!(tokens.get(pos));
+
+    if let Token::Identifier(name) = token {
+        return Ok((name.to_string(), pos + 1));
+    };
+
+    Err(format!(
+        "Expected identifier but received: {:?}",
+        tokens.get(pos)
+    ))
 }
 
 #[cfg(test)]

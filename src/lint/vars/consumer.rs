@@ -31,6 +31,7 @@ impl ScopeConsumer for Statement {
             Exec(expr) => expr.consumes(),
             Append(expr) => expr.consumes(),
             Set(expr) => expr.consumes(),
+            Bind(id) => vec![id.to_string()],
         }
     }
 }

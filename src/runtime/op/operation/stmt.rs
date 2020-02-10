@@ -91,6 +91,10 @@ pub fn set(expr: &Expression, env: &mut Environment) {
     env.replace_line(|env, _| expr.to_value(env))
 }
 
+pub fn bind(id: &str, env: &mut Environment) {
+    env.bind_variable(id);
+}
+
 #[cfg(not(target_os = "windows"))]
 fn shell(cmd: &str) -> Result<std::process::Child, std::io::Error> {
     Command::new("sh")

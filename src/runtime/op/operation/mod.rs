@@ -72,6 +72,7 @@ impl Operation for ast::Statement {
             Exec(expr) => exec(expr, env),
             Append(expr) => append(expr, env),
             Set(expr) => set(expr, env),
+            Bind(id) => bind(id, env),
         }
     }
 }

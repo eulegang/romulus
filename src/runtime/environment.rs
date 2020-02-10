@@ -3,6 +3,7 @@ use super::RangeCap;
 use super::{RangeScopeTracker, Scope};
 use crate::ast::Seq;
 use regex::{Regex, Split};
+use std::collections::HashMap;
 use std::io::{copy, Read, Write};
 
 /// An event to be processed
@@ -29,6 +30,8 @@ pub struct Environment<'a> {
 
     pub(crate) tracker: RangeScopeTracker,
 
+    globals: HashMap<String, String>,
+
     seperator: Regex,
     scope_stack: Vec<Scope>,
     out: &'a mut dyn Write,
@@ -45,6 +48,7 @@ impl<'a> Environment<'a> {
             quit: false,
             seperator,
             out: w,
+            globals: HashMap::new(),
             tracker: RangeScopeTracker::new(node.num_ranges()),
         }
     }
@@ -64,6 +68,10 @@ impl<'a> Environment<'a> {
             if let Some(value) = scope.get(key) {
                 return Some(value.to_string());
             }
+        }
+
+        if let Some(value) = self.globals.get(key) {
+            return Some(value.to_string());
         }
 
         None
@@ -124,6 +132,12 @@ impl<'a> Environment<'a> {
         if let Event::Line(line) = &self.event {
             let buf = format!("{}{}", line, nl!());
             let _ = copy(&mut buf.as_bytes(), self.out);
+        }
+    }
+
+    pub(crate) fn bind_variable(&mut self, key: &str) {
+        if let Some(value) = self.lookup(key) {
+            self.globals.insert(key.to_string(), value);
         }
     }
 }

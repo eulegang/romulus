@@ -2,11 +2,14 @@ use super::{LintMessage, Linter};
 use crate::ast::*;
 
 mod consumer;
+mod globals;
 pub(crate) mod provider;
 mod scoping;
 
 use consumer::env_vars;
 use scoping::*;
+
+use globals::Globals;
 
 pub(super) struct Vars();
 
@@ -15,6 +18,7 @@ impl Linter for Vars {
         let mut vars = Vec::new();
 
         vars.push(vec!["_".to_string()]);
+        vars.push(node.globals());
 
         if cfg!(feature = "envvar") {
             vars.push(env_vars());
