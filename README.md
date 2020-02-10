@@ -41,3 +41,31 @@ Currenty the only supported way to install romulus is to install by source code
 $ cargo install romulus
 ```
 
+## Features
+
+When rust programs are compiled a feature list may be passed.
+
+### color
+
+On by default.
+
+Error messages and other such things use ansi color codes.
+
+### envvar
+
+On by default.
+
+Preloads all the environmental variables into the base variable stack
+
+### stdin-tty
+
+Off by default
+
+Allows processing from interactive terminal.
+
+### bind
+
+Off by default
+
+Allows the use of the bind statement (expirimental).  Sets global variable from local variable.
+
