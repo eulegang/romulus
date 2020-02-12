@@ -135,7 +135,15 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '/' => {
                 it.next();
-                let chars = chomp_until_escaped(&mut it, '/', false)?;
+                let chars = chomp_until_escaped(
+                    &mut it,
+                    '/',
+                    &[
+                        '{', '}', '[', ']', '.', '^', '$', '*', '+', '?', '|', '(', ')', 'd', 'D',
+                        's', 'S', 'w', 'W', 'p', 'P', 'b', 'B', 'A', 'z', 'a', 'f', 't', 'n', 'r',
+                        'v', 'x', 'u', 'U', '\\',
+                    ],
+                )?;
                 let pattern = chars;
                 if let Some((_, '/')) = it.next() {
                 } else {
@@ -149,7 +157,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '"' => {
                 it.next();
-                let content = chomp_until_escaped(&mut it, '"', true)?;
+                let content = chomp_until_escaped(&mut it, '"', &['$'])?;
                 it.next();
 
                 tokens.push(Token::String(content, true));
@@ -157,7 +165,7 @@ pub fn full_lex(buf: &str) -> Result<Vec<Token>, String> {
 
             '\'' => {
                 it.next();
-                let content = chomp_until_escaped(&mut it, '\'', false)?;
+                let content = chomp_until_escaped(&mut it, '\'', &[])?;
                 it.next();
 
                 tokens.push(Token::String(content, false));

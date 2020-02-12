@@ -119,7 +119,7 @@ impl<A: Chomper, B: Chomper> Chomper for (A, B) {
 pub fn chomp_until_escaped<T: Iterator<Item = (usize, char)>>(
     iter: &mut Peekable<T>,
     terminator: char,
-    evaluates: bool,
+    escapable: &[char], //evaluates: bool,
 ) -> Result<String, String> {
     let mut accepted = String::new();
 
@@ -129,15 +129,16 @@ pub fn chomp_until_escaped<T: Iterator<Item = (usize, char)>>(
         if owned == '\\' {
             iter.next();
             match iter.next() {
+                Some((_, escaped)) if escaped == terminator => accepted.push(escaped),
+                Some((_, escaped)) if escapable.contains(&escaped) => {
+                    accepted.push('\\');
+                    accepted.push(escaped);
+                }
+
                 Some((_, 'n')) => accepted.push('\n'),
-                Some((_, '\\')) => accepted.push('\\'),
                 Some((_, 't')) => accepted.push('\t'),
                 Some((_, 'r')) => accepted.push('\r'),
-                Some((_, '$')) if evaluates => {
-                    accepted.push('\\');
-                    accepted.push('$')
-                }
-                Some((_, escaped)) if escaped == terminator => accepted.push(escaped),
+                Some((_, '\\')) => accepted.push('\\'),
                 Some((_, escaped)) => return Err(format!("cannot escape {}", escaped)),
                 None => return Err(format!("found EOF when searching for {}", &terminator)),
             }
