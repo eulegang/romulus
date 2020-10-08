@@ -7,10 +7,7 @@ pub(crate) trait Lifecycle {
 
 impl Lifecycle for Event {
     fn is_lifecycle(&self) -> bool {
-        match self {
-            Event::Begin | Event::End => true,
-            _ => false,
-        }
+        matches!(self, Event::Begin | Event::End)
     }
 }
 
@@ -35,9 +32,6 @@ impl Lifecycle for Selector {
 
 impl Lifecycle for Match {
     fn is_lifecycle(&self) -> bool {
-        match self {
-            Match::Begin | Match::End => true,
-            _ => false,
-        }
+        matches!(self, Match::Begin | Match::End)
     }
 }
