@@ -1,0 +1,104 @@
+.TH ROMULUS 1 "Oct 24 2020"
+
+.SH NAME
+
+romulus \- sed/awk like stream processor.
+
+.SH SYNOPSIS
+
+\fBromulus\fR [-e | --expr <expr>] 
+[-f | --file <file>] 
+[<inputs> ...] 
+[--features]
+[-E | --explicit] 
+[-i | --inplace <backup>] 
+[-l | --lint <lint_level>] 
+[-o | --ouput <output>]
+[-s | --sep <sep>]
+
+.SH DESCRIPTION
+
+A modern stream editor.
+
+.SH SAMPLES
+
+.PP 
+\'2,$ & [/kube/, _, hash] print hash\'
+.RS 4
+extract k8s oriented docker hashes
+.RE
+
+.SH OPTIONS
+
+.PP
+<inputs> 
+.RS 4
+input to be processed
+.RE
+
+.PP
+-e, --expr \fB<expr>\fR
+.RS 4
+Use an expression to process files 
+.RE
+
+.PP
+-f, --file \fB<file>\fR
+.RS 4
+read a file of expressions
+.RE
+
+.PP
+--features
+.RS 4 
+list freatures romulus was compiled with
+.RE
+
+.PP
+-E, --explicit
+.RS 4
+disable implicit line printing
+.RE
+
+.PP
+-i, --inplace \fB<backup>\fR
+.RS 4
+replace file contents in inputs
+.RE
+
+.PP
+-l, --lint \fB<lint>\fR
+.RS 4
+prints warnings based on levels, warn by default.
+.RS 2
+.PP
+warn: print to stderr, run program
+.PP
+off: do not print lints, run program
+.PP
+strict: print to stderr, does not run program if found
+.RE
+.RE
+
+.PP
+-o, --out \fB<outfile>\fR
+.RS 4
+output to specified file, stdout by default.
+.RE
+
+.PP
+-s, --sep \fB<sep>\fR
+.RS 4
+seperates lines to by matched by destructuring. \\s+ by default
+.RE
+
+
+.SH "ENVIRONMENT VARIABLES"
+
+.PP
+\fBRLINT\fR
+Sets default lint level
+
+.PP
+\fBRSEP\fR
+Sets default seperator regex
