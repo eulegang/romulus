@@ -6,14 +6,11 @@ pub(crate) trait ScopeProvider {
 }
 
 pub(crate) fn regex_provides(regex: &Regex) -> Vec<String> {
-    let mut results = Vec::new();
-    for o in regex.capture_names() {
-        if let Some(name) = o {
-            results.push(name.to_string());
-        }
-    }
-
-    results
+    regex
+        .capture_names()
+        .flatten()
+        .map(ToString::to_string)
+        .collect()
 }
 
 impl ScopeProvider for Selector {

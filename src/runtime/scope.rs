@@ -22,15 +22,13 @@ impl Scope {
         let mut scope = Scope::new();
 
         if let Some(captures) = regex.captures(line) {
-            for name in regex.capture_names() {
-                if let Some(n) = name {
-                    if n == "_" {
-                        continue;
-                    }
+            for name in regex.capture_names().flatten() {
+                if name == "_" {
+                    continue;
+                }
 
-                    if let Some(m) = captures.name(n) {
-                        scope.set(n.to_string(), m.as_str().to_string())
-                    }
+                if let Some(m) = captures.name(name) {
+                    scope.set(name.to_string(), m.as_str().to_string())
                 }
             }
         }
@@ -41,15 +39,13 @@ impl Scope {
     pub(crate) fn from_captures(regex: &Regex, captures: &Captures) -> Scope {
         let mut scope = Scope::new();
 
-        for name in regex.capture_names() {
-            if let Some(n) = name {
-                if n == "_" {
-                    continue;
-                }
+        for name in regex.capture_names().flatten() {
+            if name == "_" {
+                continue;
+            }
 
-                if let Some(m) = captures.name(n) {
-                    scope.set(n.to_string(), m.as_str().to_string())
-                }
+            if let Some(m) = captures.name(name) {
+                scope.set(name.to_string(), m.as_str().to_string())
             }
         }
 
