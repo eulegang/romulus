@@ -109,7 +109,7 @@ impl Selector {
         let (lh, next) = Selector::parse_and(tokens, pos)?;
 
         if tokens.get(next) == Some(&Token::Symbol('|')) {
-            let (rh, end) = Selector::parse(tokens, next + 1)?;
+            let (rh, end) = Selector::parse_or(tokens, next + 1)?;
 
             Ok((Selector::Disjunction(Box::new(lh), Box::new(rh)), end))
         } else {
@@ -121,7 +121,7 @@ impl Selector {
         let (lh, next) = Selector::parse_not(tokens, pos)?;
 
         if tokens.get(next) == Some(&Token::Symbol('&')) {
-            let (rh, end) = Selector::parse(tokens, next + 1)?;
+            let (rh, end) = Selector::parse_and(tokens, next + 1)?;
 
             Ok((Selector::Conjunction(Box::new(lh), Box::new(rh)), end))
         } else {

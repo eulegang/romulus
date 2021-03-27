@@ -370,6 +370,17 @@ fn parse_selector_op_precedence() {
     );
 
     assert_eq!(
+        parse(lex("/thing/ & !/other/ | /some/ print _").unwrap()),
+        Ok(seq![tl
+            Body::Single(
+                selector!(o selector!(a selector!(m rmatch!("thing")), selector!(! selector!(m rmatch!("other")))),
+                    selector!(m rmatch!("some"))),
+                Statement::Print(Expression::Identifier("_".to_string()))
+            )
+        ])
+    );
+
+    assert_eq!(
         parse(lex("!(/thing/ | /other/) & /some/ print _").unwrap()),
         Ok(seq![tl
             Body::Single(
