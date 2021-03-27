@@ -1,5 +1,6 @@
 use super::*;
 use crate::lex::lex;
+use std::panic::panic_any;
 
 macro_rules! seq {
     (tl $($ast: expr),*) => {
@@ -71,7 +72,7 @@ macro_rules! selector {
 fn basic_parse() {
     let tokens = match lex("/needle/ { print('found it') }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -87,7 +88,7 @@ fn basic_parse() {
 fn basic_statement() {
     let tokens = match lex("print('found it')") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -100,7 +101,7 @@ fn basic_statement() {
 fn parse_range() {
     let tokens = match lex("/a/,/b/ { print _ }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -116,7 +117,7 @@ fn parse_range() {
 fn parse_identifiers() {
     let tokens = match lex("/Type: (?P<type>.*)/ { print(type) }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -132,7 +133,7 @@ fn parse_identifiers() {
 fn parse_pattern_match() {
     let tokens = match lex("['<none>', _, id] { print(id) }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -152,7 +153,7 @@ fn parse_pattern_match() {
 fn parse_statement_patterns() {
     let tokens = match lex("['DONE'] { quit }\n/thing/{print _}") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -174,7 +175,7 @@ fn parse_statement_patterns() {
 fn parse_statement_subst() {
     let tokens = match lex("/thing/ { subst /that/, 'other' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -192,7 +193,7 @@ fn parse_statement_subst() {
 fn parse_statement_gsubst() {
     let tokens = match lex("/thing/ { gsubst /that/, 'other' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -210,7 +211,7 @@ fn parse_statement_gsubst() {
 fn parse_statement_read() {
     let tokens = match lex("/thing/ { read 'somefile.txt' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -228,7 +229,7 @@ fn parse_statement_read() {
 fn parse_statement_write() {
     let tokens = match lex("/thing/ { write 'somefile.txt' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -246,7 +247,7 @@ fn parse_statement_write() {
 fn parse_statement_execute() {
     let tokens = match lex("/thing/ { exec \"echo ${_}\" }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -264,7 +265,7 @@ fn parse_statement_execute() {
 fn parse_statement_append() {
     let tokens = match lex("/backup/ { append '.bak' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -282,7 +283,7 @@ fn parse_statement_append() {
 fn parse_statement_set() {
     let tokens = match lex("/backup/ { set '.bak' }") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
@@ -300,7 +301,7 @@ fn parse_statement_set() {
 fn parse_single() {
     let tokens = match lex("/thing/ exec \"echo ${_}\"") {
         Ok(tokens) => tokens,
-        Err(msg) => panic!(msg),
+        Err(msg) => panic_any(msg),
     };
 
     assert_eq!(
