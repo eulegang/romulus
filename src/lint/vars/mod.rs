@@ -15,10 +15,7 @@ pub(super) struct Vars();
 
 impl Linter for Vars {
     fn lint(&self, node: &Seq) -> Vec<LintMessage> {
-        let mut vars = Vec::new();
-
-        vars.push(vec!["_".to_string()]);
-        vars.push(node.globals());
+        let mut vars = vec![vec!["_".to_string()], node.globals()];
 
         if cfg!(feature = "envvar") {
             vars.push(env_vars());

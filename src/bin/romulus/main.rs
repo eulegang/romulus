@@ -163,7 +163,7 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
 
         interpreter.process(&mut BufReader::new(fin), &mut fout);
 
-        if ext != "" {
+        if !ext.is_empty() {
             if let Err(err) = fs::rename(&input, format!("{}.{}", input, ext)) {
                 drop(fout);
                 error!("unable to rename {}.{} -> {}: {}", input, ext, input, err);
@@ -171,7 +171,8 @@ fn process_inplace<'a, I: Iterator<Item = &'a str>>(
         }
 
         if let Err(err) = fout.persist(input) {
-            if err.error.kind() == std::io::ErrorKind::Other { // try to cp it manually
+            if err.error.kind() == std::io::ErrorKind::Other {
+                // try to cp it manually
                 if let Err(err) = std::fs::copy(err.file.path(), input) {
                     error!("unable to replace {}: {}", input, err);
                 }

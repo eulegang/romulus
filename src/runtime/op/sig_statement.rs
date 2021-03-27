@@ -43,12 +43,6 @@ impl SigStatement for ast::Statement {
     fn significant(&self) -> bool {
         use ast::Statement::*;
 
-        match self {
-            Print(_) => true,
-            Read(_) => true,
-            Write(_) => true,
-            Exec(_) => true,
-            _ => false,
-        }
+        matches!(self, Print(_) | Read(_) | Write(_) | Exec(_))
     }
 }
